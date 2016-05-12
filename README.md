@@ -16,6 +16,8 @@ Clone the repository and run the Flask app locally:
     $ cd small-group
     $ python app.py
 
+Make sure you have a private GitHub repository for synchronizing your data. 
+
 # contributing & feature requests
 Software is provided as-is. I add features only if I find them useful for my own small group. If you have suggestions, put in an issue, and I'll make a final call on whether I will implement it.
 
