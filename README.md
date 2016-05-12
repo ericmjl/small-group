@@ -34,7 +34,9 @@ On the other hand, pull requests with new or original code contributions are alw
 
 # faq
 **Q: Where are my small group member data stored?**
+
 A: They are stored in your home directory. The exact path is: `~/.smallgroup/members.json`.
 
 **Q: What is the algorithm for dividing group members?**
+
 A: The algorithm maximizes the summed Shannon diversity across the "Faith Status", "Role" and "Gender" columns. You can find it in the [`divide.py`](./divide.py) file.
