@@ -15,6 +15,7 @@ if not op.isdir(db_dir):
 
 db_path = op.join(db_dir, 'members.json')
 
+# Initialize the app with the database.
 app = Flask(__name__)
 db = TinyDB(db_path)
 
