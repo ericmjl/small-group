@@ -3,6 +3,14 @@ A local web app I built to store information about our Bible Study small group a
 
 # how to install
 
+Make sure you have the dependencies:
+
+- Python 3
+- `tinydb`
+- `flask`
+
+Clone the repository and run the Flask app locally:
+
     $ cd /path/to/your/favorite/dir
     $ git clone https://github.com/ericmjl/small-group.git
     $ cd small-group
