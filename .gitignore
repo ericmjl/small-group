@@ -1,3 +1,13 @@
+# Database File
+members.json
+members.csv
+
+# Sublime Text
+*.sublime*
+
+# Mac OS X
+*.DS_Store
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

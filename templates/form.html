@@ -1,0 +1,93 @@
+{% extends "master.html" %}
+
+{% block page_title %}MITCEF 小羊组{% endblock %}
+
+{% block content %}
+<div class="form-group">
+    <form method="POST" name="member-info">
+        <div name="id" class="form-group">
+            {% if member %}
+                <input type="hidden" name="id" value="{{ member.eid }}"></input>
+            {% else %}
+                <input type="hidden" name="id" value=""></input>
+            {% endif %}
+        </div>
+        
+        <div name="name" class="form-group">
+            <label for="name">Name</label>
+            <input class="form-control" name="name" value="{{ member['name'] }}"></input>
+         </div>
+        
+         <div name="surname" class="form-group">
+            <label for="surname">Surname</label>
+            <input class="form-control" name="surname" value="{{ member['surname'] }}"></input>
+        </div>
+
+        <div name="gender" class="form-group">
+            <label for="gender">Gender</label>
+            <select class="form-control" name="gender">
+                {% for gender in ['M', 'F'] %}
+                    {% if (member and gender == member['gender']) %}
+                        <option value="{{ gender }}" selected>{{ gender }}</option>
+                    {% else %}
+                        <option value="{{ gender }}">{{ gender }}</option>
+                    {% endif %}
+                {% endfor %}                
+            </select>
+        </div>
+
+        <div name="faith_status" class="form-group">
+            <label for="faith_status">Faith Status</label>
+            <select class="form-control" name="faith_status">
+                {% for status in faith_statuses %}
+                    {% if (member and status == member['faith_status']) or (not member and status == 'unknown') %}
+                        <option value="{{ status }}" selected>{{ status }}</option>
+                    {% else %}
+                        <option value="{{ status }}">{{ status }}</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+
+        <div name="role" class="form-group">
+            <label for="role">Role</label>
+            <select class="form-control" name="role">
+                {% for role in roles %}
+                    {% if (member and role == member['role']) or (not member and role == 'none') %}
+                        <option value="{{ role }}" selected>{{ role }}</option>
+                    {% else %}
+                        <option value="{{ role }}">{{ role }}</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div name="active" class="form-group">
+            <label for="active">Active</label>
+            <select class="form-control" name="active">
+            {% for active in ['true', 'false'] %}
+                {% if (member and active == member['active']) or (not member and active == 'none') %}
+                    <option value="{{ active }}" selected>{{ active }}</option>
+                {% else %}
+                    <option value="{{ active }}"> {{ active }}</option>
+                {% endif %}
+            {% endfor %}
+            </select>
+        </div>
+
+        <div name="notes" class="form-group">
+            <label for="notes">Notes</label>
+            <input class="form-control" name="notes" value="{{ member['notes'] }}"></input>
+        </div>
+
+
+
+        {% if member %}
+            <button class="btn btn-primary" type="submit" formaction="/update_member/{{ member.eid }}">Save Changes</button>
+            <button class="btn btn-danger" type="submit" formaction="/delete/{{ member.eid }}">Delete Member</button>
+        {% else %}
+            <button class="btn btn-success" name="save" type="submit" formaction="/add_member">Save Member</button>
+        {% endif %}
+    </form>
+</div>
+{% endblock %}
