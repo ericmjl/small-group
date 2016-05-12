@@ -15,6 +15,9 @@ if not op.isdir(db_dir):
 
 db_path = op.join(db_dir, 'members.json')
 
+# 2. Make sure the data are synced.
+os.system('bash sync_smallgroup_data.sh')
+
 # Initialize the app with the database.
 app = Flask(__name__)
 db = TinyDB(db_path)
