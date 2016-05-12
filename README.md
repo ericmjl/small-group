@@ -23,7 +23,7 @@ Make sure you have a **private** GitHub repository specially designated for sync
     $ git remote add origin <your private github repository URL>
     $ git push --set-upstream origin master
 
-Once this is done, synchronization is done automatically each time you run the app, through a script called `sync_smallgroup_data.sh`.
+Once this is done, synchronization is done automatically each time you run the app, through a script called [`sync.sh`](./sync.sh).
 
 To close the app, close the terminal window in which you ran the app.
 
@@ -37,4 +37,4 @@ On the other hand, pull requests with new or original code contributions are alw
 A: They are stored in your home directory. The exact path is: `~/.smallgroup/members.json`.
 
 **Q: What is the algorithm for dividing group members?**
-A: The algorithm maximizes the summed Shannon diversity across the "Faith Status", "Role" and "Gender" columns. You can find it in the 
+A: The algorithm maximizes the summed Shannon diversity across the "Faith Status", "Role" and "Gender" columns. You can find it in the [`divide.py`](./divide.py) file.
