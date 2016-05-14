@@ -101,7 +101,7 @@ class SmallGroup(object):
                 fang = any(x.name == 'Fang' for x in ms)
                 mengyi = any(x.name == 'Mengyi' for x in ms)
                 if (fang and mengyi):
-                    passed = True
+                    passed = False
 
         else:
             passed = True
