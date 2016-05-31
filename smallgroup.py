@@ -56,8 +56,8 @@ class SmallGroup(object):
         for m in self.unassigned_members:
             if (m.role == 'facilitator'
                     and m not in self.assigned_members
-                    and count < num_groups):  # this line restricts num of
-                                              # groups automatically.
+                    # this line restricts num of groups automatically.
+                    and count < num_groups):
                 self.groups[count].append(m)
                 self.assigned_members.append(m)
                 count += 1
@@ -130,7 +130,6 @@ class SmallGroup(object):
         new_sum_sdi = self.summed_shannon_diversity()
         # Next line is the old version. Line after is the new one.
         if new_sum_sdi >= curr_sum_sdi and self.passed_rejection_criteria():
-        # if new_sum_sdi >= curr_sum_sdi:
             return new_sum_sdi
         else:
             self.groups[g1].append(member1)
