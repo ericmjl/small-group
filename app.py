@@ -178,12 +178,8 @@ def shuffle():
 
         members.append(Member(**data))
 
-    if len(members) <= 5:
-        error_msg = 'No need to divide, as you have fewer than 6 people.'
-        return render_template('error.html',
-                               error_msg=error_msg)
-
-    else:
+    try:
+        assert len(members) > 5
         g = SmallGroup(members)
         g.distribute_group_members()
 
@@ -195,6 +191,10 @@ def shuffle():
                 g.propose_swap()
                 tries += 1
         return render_template('shuffle.html', groups=g.groups)
+
+    except AssertionError:
+        error_msg = 'There are fewer than 6 people; no need to shuffle.'
+        return render_template('error.html', error_msg=error_msg)
 
 
 @app.route('/sync', methods=['POST'])
