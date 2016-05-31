@@ -52,6 +52,7 @@ class SmallGroup(object):
         print(num_groups)
         shuffle(self.unassigned_members)
 
+        # First, assign facilitators amongst the groups.
         for m in self.unassigned_members:
             if (m.role == 'facilitator'
                     and m not in self.assigned_members
@@ -73,15 +74,15 @@ class SmallGroup(object):
                 self.groups[remainder].append(m)
                 count += 1
 
-        while not self.passed_rejection_criteria():
-            # print('i')
+        if not self.passed_rejection_criteria():
+            print('i')
             self.propose_swap()
 
     def find_member(self, first_name):
         """
         Finds a member by their first name.
         """
-        member = False
+        member = None
         for m in self.members:
             if m.name == first_name:
                 member = m
@@ -90,8 +91,7 @@ class SmallGroup(object):
     def passed_rejection_criteria(self):
         passed = False
 
-        # Criteria 1: Ding Fang & Mengyi must be in the same group, if both
-        # have arrived.
+        # Criteria 1: Ding Fang & Mengyi must not be in the same group.
         fang = self.find_member('Fang')
         mengyi = self.find_member('Mengyi')
 
@@ -100,8 +100,8 @@ class SmallGroup(object):
             for g, ms in self.groups.items():
                 fang = any(x.name == 'Fang' for x in ms)
                 mengyi = any(x.name == 'Mengyi' for x in ms)
-                if (fang and mengyi):
-                    passed = False
+                if not (fang and mengyi):
+                    passed = True
 
         else:
             passed = True
@@ -126,7 +126,9 @@ class SmallGroup(object):
         self.groups[g2].remove(member2)
 
         new_sum_sdi = self.summed_shannon_diversity()
+        # Next line is the old version. Line after is the new one.
         if new_sum_sdi >= curr_sum_sdi and self.passed_rejection_criteria():
+        # if new_sum_sdi >= curr_sum_sdi:
             return new_sum_sdi
         else:
             self.groups[g1].append(member1)
