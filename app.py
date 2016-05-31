@@ -182,8 +182,23 @@ def shuffle():
     g.distribute_group_members()
 
     for i in range(1000):
-        g.propose_swap()
+        while not g.passed_rejection_criteria():
+            g.propose_swap()
     return render_template('shuffle.html', groups=g.groups)
+
+
+@app.route('/sync', methods=['POST'])
+def sync():
+    """
+    Forces a sync of the database with GitHub.
+    """
+    os.system('bash sync.sh')
+    active, inactive = split_members_by_active()
+    return render_template('index.html',
+                           all_members=db.all(),
+                           active=active,
+                           inactive=inactive,
+                           summary=members_summary())
 
 if __name__ == '__main__':
     app.run(debug=True)

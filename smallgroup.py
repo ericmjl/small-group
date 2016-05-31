@@ -89,22 +89,24 @@ class SmallGroup(object):
         return member
 
     def passed_rejection_criteria(self):
+        passed1 = self.two_members_not_in_same_group('Fang', 'Mengyi')
+        passed2 = self.two_members_not_in_same_group('Yufeng', 'Jingyuan')
+
+        return all([passed1, passed2])
+
+    def two_members_not_in_same_group(self, mbr1, mbr2):
         passed = False
+        member1 = self.find_member(mbr1)
+        member2 = self.find_member(mbr2)
 
-        # Criteria 1: Ding Fang & Mengyi must not be in the same group.
-        fang = self.find_member('Fang')
-        mengyi = self.find_member('Mengyi')
-
-        if fang and mengyi:
-            # g = group #, ms = list of members in that group
-            for g, ms in self.groups.items():
-                fang = any(x.name == 'Fang' for x in ms)
-                mengyi = any(x.name == 'Mengyi' for x in ms)
-                if not (fang and mengyi):
+        if member1 and member2:
+            for g, members in self.groups.items():
+                has_member1 = member1 in members
+                has_member2 = member2 in members
+                # print(member1, member2, members)
+                # print(has_member1, has_member2, has_member1 and has_member2)
+                if not has_member1 and has_member2:
                     passed = True
-
-        else:
-            passed = True
 
         return passed
 
