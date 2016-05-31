@@ -178,13 +178,23 @@ def shuffle():
 
         members.append(Member(**data))
 
-    g = SmallGroup(members)
-    g.distribute_group_members()
+    if len(members) <= 5:
+        error_msg = 'No need to divide, as you have fewer than 6 people.'
+        return render_template('error.html',
+                               error_msg=error_msg)
 
-    for i in range(1000):
-        while not g.passed_rejection_criteria():
-            g.propose_swap()
-    return render_template('shuffle.html', groups=g.groups)
+    else:
+        g = SmallGroup(members)
+        g.distribute_group_members()
+
+        for i in range(1000):
+            # set limit for not passing rejection criteria
+            limit = 10
+            tries = 0
+            while not g.passed_rejection_criteria() and tries < limit:
+                g.propose_swap()
+                tries += 1
+        return render_template('shuffle.html', groups=g.groups)
 
 
 @app.route('/sync', methods=['POST'])
@@ -201,4 +211,4 @@ def sync():
                            summary=members_summary())
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5000)
