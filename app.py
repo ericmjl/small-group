@@ -159,6 +159,17 @@ def delete(id):
                            summary=members_summary())
 
 
+def has_one_believer(members):
+    """
+    Checks to ensure that there is at least one baptized believer available.
+    """
+    has_member = False
+    for member in members:
+        if member.faith_status == 'baptized':
+            has_member = True
+    return has_member
+
+
 @app.route('/shuffle', methods=['POST'])
 def shuffle():
     """
@@ -177,6 +188,13 @@ def shuffle():
             data[s] = member_data[s]
 
         members.append(Member(**data))
+
+    """Check to make sure that there is at least one believer."""
+    try:
+        assert has_one_believer(members)
+    except AssertionError:
+        error_msg = "There are no baptized disciples to lead Bible study."
+        return render_template('error.html', error_msg=error_msg)
 
     try:
         assert len(members) > 5
@@ -211,4 +229,4 @@ def sync():
                            summary=members_summary())
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5050)
