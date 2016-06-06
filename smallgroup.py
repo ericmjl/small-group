@@ -103,8 +103,6 @@ class SmallGroup(object):
             for g, members in self.groups.items():
                 has_member1 = member1 in members
                 has_member2 = member2 in members
-                # print(member1, member2, members)
-                # print(has_member1, has_member2, has_member1 and has_member2)
                 if not has_member1 and has_member2:
                     passed = True
 
