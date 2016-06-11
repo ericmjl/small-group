@@ -54,7 +54,7 @@ class SmallGroup(object):
 
         # First, assign facilitators amongst the groups.
         for m in self.unassigned_members:
-            if (m.role == 'facilitator'
+            if ((m.role == 'facilitator' or m.role == 'counselor')
                     and m not in self.assigned_members
                     # this line restricts num of groups automatically.
                     and count < num_groups):
