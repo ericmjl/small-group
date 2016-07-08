@@ -201,13 +201,13 @@ def shuffle():
         g = SmallGroup(members)
         g.distribute_group_members()
 
-        for i in range(1000):
-            # set limit for not passing rejection criteria
-            limit = 10
-            tries = 0
-            while not g.passed_rejection_criteria() and tries < limit:
-                g.propose_swap()
-                tries += 1
+        # for i in range(1000):
+        #     # set limit for not passing rejection criteria
+        #     limit = 10
+        #     tries = 0
+        #     while not g.passed_rejection_criteria() and tries < limit:
+        #         g.propose_swap()
+        #         tries += 1
         return render_template('shuffle.html', groups=g.groups)
 
     except AssertionError:

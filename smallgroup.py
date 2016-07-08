@@ -74,9 +74,13 @@ class SmallGroup(object):
                 self.groups[remainder].append(m)
                 count += 1
 
-        if not self.passed_rejection_criteria():
-            print('i')
+        for i in range(2000):
+            print('Swap {0}'.format(i))
             self.propose_swap()
+            print(self.summed_shannon_diversity())
+            if not self.passed_rejection_criteria():
+                print('not pass')
+                self.propose_swap()
 
     def find_member(self, first_name):
         """
@@ -105,6 +109,8 @@ class SmallGroup(object):
                 has_member2 = member2 in members
                 if not has_member1 and has_member2:
                     passed = True
+        else:
+            passed = True
 
         return passed
 
