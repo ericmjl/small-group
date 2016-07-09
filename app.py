@@ -163,12 +163,22 @@ def has_one_believer(members):
     """
     Checks to ensure that there is at least one baptized believer available.
     """
-    has_member = False
+    has_believer = False
     for member in members:
         if member.faith_status == 'baptized':
-            has_member = True
-    return has_member
+            has_believer = True
+    return has_believer
 
+
+def has_one_facilitator(members):
+    """
+    Checks to ensure that there is at least one facilitator available.
+    """
+    has_facilitator = False
+    for member in members:
+        if member.role == 'facilitator':
+            has_facilitator = True
+    return has_facilitator
 
 @app.route('/shuffle', methods=['POST'])
 def shuffle():
@@ -194,6 +204,12 @@ def shuffle():
         assert has_one_believer(members)
     except AssertionError:
         error_msg = "There are no baptized disciples to lead Bible study."
+        return render_template('error.html', error_msg=error_msg)
+
+    try:
+        assert has_one_facilitator(members)
+    except AssertionError:
+        error_msg = "There are no facilitators to lead BIble study."
         return render_template('error.html', error_msg=error_msg)
 
     try:
