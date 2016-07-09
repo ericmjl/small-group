@@ -180,6 +180,7 @@ def has_one_facilitator(members):
             has_facilitator = True
     return has_facilitator
 
+
 @app.route('/shuffle', methods=['POST'])
 def shuffle():
     """
