@@ -12,12 +12,12 @@
                 <input type="hidden" name="id" value=""></input>
             {% endif %}
         </div>
-        
+
         <div name="name" class="form-group">
             <label for="name">Name</label>
             <input class="form-control" name="name" value="{{ member['name'] }}"></input>
          </div>
-        
+
          <div name="surname" class="form-group">
             <label for="surname">Surname</label>
             <input class="form-control" name="surname" value="{{ member['surname'] }}"></input>
@@ -32,7 +32,7 @@
                     {% else %}
                         <option value="{{ gender }}">{{ gender }}</option>
                     {% endif %}
-                {% endfor %}                
+                {% endfor %}
             </select>
         </div>
 
@@ -61,7 +61,7 @@
                 {% endfor %}
             </select>
         </div>
-        
+
         <div name="active" class="form-group">
             <label for="active">Active</label>
             <select class="form-control" name="active">
