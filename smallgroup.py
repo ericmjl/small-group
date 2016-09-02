@@ -74,7 +74,7 @@ class SmallGroup(object):
                 self.groups[remainder].append(m)
                 count += 1
 
-        for i in range(2000):
+        for i in range(1000):
             print('Swap {0}'.format(i))
             self.propose_swap()
             print(self.summed_shannon_diversity())
