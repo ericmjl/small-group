@@ -68,9 +68,14 @@
                     <td>{{ member['faith_status'] }}</td>
                     <td>{{ member['role'] }}</td>
                     {% if member['notes'] %}
-                        <td>yes</td>
+                        <td>
+                            <a href="#" data-toggle="tooltip" data-placement="right" title="{{ member['notes'] }}">
+                                info
+                            </a>
+                        </td>
+
                     {% else %}
-                        <td>no</td>
+                        <td> </td>
                     {% endif %}
                     <td>
                         <input type="checkbox" font-size: 50px name="present.{{ member.eid }}" value="{{ member.eid }}"></input>
