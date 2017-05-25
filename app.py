@@ -67,7 +67,6 @@ def archive(id):
     """
     Archives the member.
     """
-    # Membr = Query()  # calling it Membr so as not to reuse variable names
     db.update({'active': 'false'}, eids=[id])
     active, inactive = split_members_by_active()
     return render_template('index.html',
