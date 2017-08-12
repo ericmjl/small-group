@@ -1,11 +1,15 @@
-from flask import Flask, render_template, request
-from tinydb import TinyDB, Query
-from member import Member
-from smallgroup import SmallGroup
-from collections import defaultdict, Counter
-
-import os.path as op
 import os
+import os.path as op
+
+from collections import Counter, defaultdict
+
+from flask import Flask, render_template, request
+
+from member import Member
+
+from smallgroup import SmallGroup
+
+from tinydb import Query, TinyDB
 
 # Initial checks
 # 1. Make sure there is a ".smallgroup/" directory under the home dir.
@@ -41,9 +45,9 @@ def members_summary():
 
 
 def split_members_by_active():
-    M = Query()
-    active = db.search(M.active == 'true')
-    inactive = db.search(M.active == 'false' or M.active == 'none')
+    m = Query()
+    active = db.search(m.active == 'true')
+    inactive = db.search(m.active == 'false' or m.active == 'none')
 
     return active, inactive
 
@@ -239,4 +243,4 @@ def sync():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host='localhost', port=5051)
+    app.run(debug=True, host='0.0.0.0', port=5050)
