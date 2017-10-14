@@ -7,7 +7,6 @@
     <!-- This is the 3 buttons at the top of the page. -->
     <div class="row">
     <div id="actions" class="form-group">
-        <button class='btn btn-success btn-lg' type="submit" formaction="/add">Add Member</button>
         <button class="btn btn-primary btn-lg" type="submit" formaction="/shuffle">Shuffle</button>
         <button class='btn btn-primary btn-lg' type='submit' formaction="/sync">Sync</button>
     </div>
@@ -15,20 +14,24 @@
 
     <!-- This is the "summary statistics" part of the page. -->
     <div class="row">
-	<div class="form-group">
-        <h3>Group Summary</h3>
-        <p>Statistics computed based on the number of active members.</p>
-        {% for label, data in summary.items() %}
-            <div class="col-md-4 form-group">
-            {{ label }}
-            {% for key, count in data.items() %}
-                <li>
-                    {{ key }}: {{ count }}
-                </li>
-            {% endfor %}
-            </div>
-        {% endfor %}
+    	<div class="form-group">
+            <h3>Group Summary</h3>
+            <p>Statistics computed based on the number of active members.</p>
+        </div>
     </div>
+    <div class="row">
+        <div class="col-md-4">
+            {{ bokehplots['pg']['script']|indent(4)|safe }}
+            {{ bokehplots['pg']['div']|safe }}
+        </div>
+        <div class="col-md-4">
+            {{ bokehplots['pf']['script']|indent(4)|safe }}
+            {{ bokehplots['pf']['div']|safe }}
+        </div>
+        <div class="col-md-4">
+            {{ bokehplots['pr']['script']|indent(4)|safe }}
+            {{ bokehplots['pr']['div']|safe }}
+        </div>
     </div>
 
     <!-- Here we display all of the members. -->
@@ -55,11 +58,11 @@
                 </tr>
                 {% for member in member_type %}
                     {% if member['faith_status'] == 'believer' %}
-                        <tr class="success">
+                        <tr class="table-success">
                     {% elif member['faith_status'] == 'baptized' %}
-                        <tr class="info">
+                        <tr class="table-primary">
                     {% else %}
-                        <tr class="warning">
+                        <tr class="table-warning">
                     {% endif %}
                     <td>{{ member.eid }}</td>
                     <td>{{ member['surname'] }}</td>
@@ -82,13 +85,13 @@
                     </td>
                     <td>
                     {% if member['active'] == 'true' %}
-                        <button class="btn btn-danger btn-xs" type="submit" formaction="/archive/{{ member.eid }}">Archive</button>
+                        <button class="btn btn-outline-danger btn-xs" type="submit" formaction="/archive/{{ member.eid }}">Archive</button>
                     {% elif member['active'] == 'false' %}
-                        <button class="btn btn-success btn-xs" type="submit" formaction="/activate/{{ member.eid }}">Activate</button>
+                        <button class="btn btn-outline-success btn-xs" type="submit" formaction="/activate/{{ member.eid }}">Activate</button>
                     {% endif %}
                     </td>
                     <td>
-                        <button class="btn btn-primary btn-xs" type="submit" formaction="/view_member/{{ member.eid }}">Edit</button>
+                        <button class="btn btn-outline-primary btn-xs" type="submit" formaction="/view_member/{{ member.eid }}">Edit</button>
                     </td>
                 </tr>
             {% endfor %}
