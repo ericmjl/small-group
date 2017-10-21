@@ -41,69 +41,110 @@
     <hr>
 
     <!-- Here we display all of the members. -->
+    <div class="row">
+        <div class="col-md-12">
+            <input class="form-control" type="text" id="searchNames" onkeyup="search()" placeholder="Search for names..">
+            <p></p>
+        </div>
+    </div>
+
     {% for member_type in [active, inactive] %}
         <div class="row">
-        <div id="{{ member_type }}-members-list" class="form-group">
-        {% if member_type == active %}
-            <h3>Active Members</h3>
-        {% else %}
-            <h3>Inactive Members</h3>
-        {% endif %}
-            <table class="table table-hover">
-                <tr>
-                    <th>ID</th>
-                    <th>姓</th>
-                    <th>名</th>
-                    <th>性别</th>
-                    <th>信仰状态</th>
-                    <th>角色</th>
-                    <th>笔记</th>
-                    <th>今天在场吗？</th>
-                    <th></th>
-                    <th></th>
-                </tr>
-                {% for member in member_type %}
-                    {% if member['faith_status'] == 'believer' %}
-                        <tr class="table-success">
-                    {% elif member['faith_status'] == 'baptized' %}
-                        <tr class="table-primary">
-                    {% else %}
-                        <tr class="table-warning">
-                    {% endif %}
-                    <td>{{ member.eid }}</td>
-                    <td>{{ member['surname'] }}</td>
-                    <td>{{ member['name'] }}</td>
-                    <td>{{ member['gender'] }}</td>
-                    <td>{{ member['faith_status'] }}</td>
-                    <td>{{ member['role'] }}</td>
-                    {% if member['notes'] %}
-                        <td>
-                            <a href="#" data-toggle="tooltip" data-placement="right" title="{{ member['notes'] }}">
-                                info
-                            </a>
-                        </td>
+            <div class="col-md-12">
+                <div id="{{ member_type }}-members-list" class="form-group">
+                {% if member_type == active %}
+                    <h3>Active Members</h3>
+                    <table id="table-active" class="table table-hover">
+                {% else %}
+                    <h3>Inactive Members</h3>
+                    <table id="table-inactive" class="table table-hover">
+                {% endif %}
+                        <tr>
+                            <th>ID</th>
+                            <th>姓</th>
+                            <th>名</th>
+                            <th>性别</th>
+                            <th>信仰状态</th>
+                            <th>角色</th>
+                            <th>笔记</th>
+                            <th>今天在场吗？</th>
+                            <th></th>
+                            <th></th>
+                        </tr>
+                        {% for member in member_type %}
+                            {% if member['faith_status'] == 'believer' %}
+                                <tr class="table-success">
+                            {% elif member['faith_status'] == 'baptized' %}
+                                <tr class="table-primary">
+                            {% else %}
+                                <tr class="table-warning">
+                            {% endif %}
+                            <td>{{ member.eid }}</td>
+                            <td>{{ member['surname'] }}</td>
+                            <td>{{ member['name'] }}</td>
+                            <td>{{ member['gender'] }}</td>
+                            <td>{{ member['faith_status'] }}</td>
+                            <td>{{ member['role'] }}</td>
+                            {% if member['notes'] %}
+                                <td>
+                                    <a href="#" data-toggle="tooltip" data-placement="right" title="{{ member['notes'] }}">
+                                        info
+                                    </a>
+                                </td>
 
-                    {% else %}
-                        <td> </td>
-                    {% endif %}
-                    <td>
-                        <input type="checkbox" font-size: 50px name="present.{{ member.eid }}" value="{{ member.eid }}"></input>
-                    </td>
-                    <td>
-                    {% if member['active'] == 'true' %}
-                        <button class="btn btn-outline-danger btn-xs" type="submit" formaction="/archive/{{ member.eid }}">Archive</button>
-                    {% elif member['active'] == 'false' %}
-                        <button class="btn btn-outline-success btn-xs" type="submit" formaction="/activate/{{ member.eid }}">Activate</button>
-                    {% endif %}
-                    </td>
-                    <td>
-                        <button class="btn btn-outline-primary btn-xs" type="submit" formaction="/view_member/{{ member.eid }}">Edit</button>
-                    </td>
-                </tr>
-            {% endfor %}
-            </table>
-        </div>
+                            {% else %}
+                                <td> </td>
+                            {% endif %}
+                            <td>
+                                <input type="checkbox" font-size: 50px name="present.{{ member.eid }}" value="{{ member.eid }}"></input>
+                            </td>
+                            <td>
+                            {% if member['active'] == 'true' %}
+                                <button class="btn btn-outline-danger btn-xs" type="submit" formaction="/archive/{{ member.eid }}">Archive</button>
+                            {% elif member['active'] == 'false' %}
+                                <button class="btn btn-outline-success btn-xs" type="submit" formaction="/activate/{{ member.eid }}">Activate</button>
+                            {% endif %}
+                            </td>
+                            <td>
+                                <button class="btn btn-outline-primary btn-xs" type="submit" formaction="/view_member/{{ member.eid }}">Edit</button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </table>
+                </div>
+            </div>
         </div>
     {% endfor %}
 </form>
+
+<script>
+function search() {
+  // Declare variables
+  var input, filter, table, tr, td, i;
+  input = document.getElementById("searchNames");
+  filter = input.value.toUpperCase();
+  tableActive = document.getElementById("table-active");
+  trActive = tableActive.getElementsByTagName("tr");
+
+  // Loop through all table rows, and hide those who don't match the search query
+  function find(tr) {
+      for (i = 0; i < tr.length; i++) {
+        td = tr[i].getElementsByTagName("td")[2];
+        console.log(td)
+        if (td) {
+          if (td.innerHTML.toUpperCase().indexOf(filter) > -1) {
+            tr[i].style.display = "";
+          } else {
+            tr[i].style.display = "none";
+          }
+        }
+      }
+    }
+  tableInactive = document.getElementById("table-inactive");
+  trInactive = tableInactive.getElementsByTagName("tr");
+
+  find(trActive)
+  find(trInactive)
+}
+</script>
 {% endblock %}
