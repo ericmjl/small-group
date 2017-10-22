@@ -1,0 +1,29 @@
+{% extends "master.html" %}
+
+{% block page_title %}MITCEF 小羊组{% endblock %}
+
+{% block content %}
+<!-- This is the "summary statistics" part of the page. -->
+<div class="row">
+    <div class="form-group">
+        <h3>小组总结</h3>
+        <p>根据小组活跃成员而统计出来的数据。</p>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-4">
+        {{ bokehplots['pg']['script']|indent(4)|safe }}
+        {{ bokehplots['pg']['div']|safe }}
+    </div>
+    <div class="col-md-4">
+        {{ bokehplots['pf']['script']|indent(4)|safe }}
+        {{ bokehplots['pf']['div']|safe }}
+    </div>
+    <div class="col-md-4">
+        {{ bokehplots['pr']['script']|indent(4)|safe }}
+        {{ bokehplots['pr']['div']|safe }}
+    </div>
+</div>
+<hr>
+
+{% endblock %}

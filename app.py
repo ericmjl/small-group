@@ -108,12 +108,10 @@ def main():
     The main page. Lists all the group members.
     """
     active, inactive = split_members_by_active()
-    bokehplots = members_summary()
     return render_template('index.html',
                            all_members=db.all(),
                            active=active,
-                           inactive=inactive,
-                           bokehplots=bokehplots)
+                           inactive=inactive)
 
 
 @app.route('/archive/<int:id>', methods=['POST'])
@@ -255,6 +253,15 @@ def sync():
     """
     os.system('bash sync.sh')
     return redirect('/')
+
+
+@app.route('/data')
+def data():
+    """
+    View page for the data.
+    """
+    bokehplots = members_summary()
+    return render_template('data.html', bokehplots=bokehplots)
 
 
 if __name__ == '__main__':
