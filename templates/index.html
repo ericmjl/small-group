@@ -38,57 +38,55 @@
                     <h3>Inactive Members</h3>
                     <table id="table-inactive" class="table table-hover">
                 {% endif %}
-                        <tr>
-                            <th>编号</th>
-                            <th>姓</th>
-                            <th>名</th>
-                            <th>性别</th>
-                            <th>信仰状态</th>
-                            <th>角色</th>
-                            <th>笔记</th>
-                            <th>今天在场吗？</th>
-                            <th></th>
-                            <th></th>
-                        </tr>
-                        {% for member in member_type %}
-                            {% if member['faith_status'] == 'believer' %}
-                                <tr class="table-success">
-                            {% elif member['faith_status'] == 'baptized' %}
-                                <tr class="table-primary">
-                            {% else %}
-                                <tr class="table-warning">
-                            {% endif %}
-                            <td>{{ member.eid }}</td>
-                            <td>{{ member['surname'] }}</td>
-                            <td>{{ member['name'] }}</td>
-                            <td>{{ member['gender'] }}</td>
-                            <td>{{ member['faith_status'] }}</td>
-                            <td>{{ member['role'] }}</td>
-                            {% if member['notes'] %}
+                        <thead>
+                            <tr>
+                                <th>编号</th>
+                                <th>姓</th>
+                                <th>名</th>
+                                <th>性别</th>
+                                <th>信仰状态</th>
+                                <th>角色</th>
+                                <th>笔记</th>
+                                <th>今天在场吗？</th>
+                                <th></th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for member in member_type %}
+                                <tr class="table" id="table-member">
+                                <td>{{ member.eid }}</td>
+                                <td>{{ member['surname'] }}</td>
+                                <td>{{ member['name'] }}</td>
+                                <td>{{ member['gender'] }}</td>
+                                <td>{{ member['faith_status'] }}</td>
+                                <td>{{ member['role'] }}</td>
+                                {% if member['notes'] %}
+                                    <td>
+                                        <a href="#" data-toggle="tooltip" data-placement="right" title="{{ member['notes'] }}">
+                                            info
+                                        </a>
+                                    </td>
+                                {% else %}
+                                    <td> </td>
+                                {% endif %}
                                 <td>
-                                    <a href="#" data-toggle="tooltip" data-placement="right" title="{{ member['notes'] }}">
-                                        info
-                                    </a>
+                                    <input type="checkbox" font-size: 50px name="present.{{ member.eid }}" value="{{ member.eid }}"></input>
                                 </td>
+                                <td>
+                                {% if member['active'] == 'true' %}
+                                    <button class="btn btn-outline-danger btn-xs" type="submit" formaction="/archive/{{ member.eid }}">Archive</button>
+                                {% elif member['active'] == 'false' %}
+                                    <button class="btn btn-outline-success btn-xs" type="submit" formaction="/activate/{{ member.eid }}">Activate</button>
+                                {% endif %}
+                                </td>
+                                <td>
+                                    <button class="btn btn-outline-primary btn-xs" type="submit" formaction="/view_member/{{ member.eid }}">Edit</button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
 
-                            {% else %}
-                                <td> </td>
-                            {% endif %}
-                            <td>
-                                <input type="checkbox" font-size: 50px name="present.{{ member.eid }}" value="{{ member.eid }}"></input>
-                            </td>
-                            <td>
-                            {% if member['active'] == 'true' %}
-                                <button class="btn btn-outline-danger btn-xs" type="submit" formaction="/archive/{{ member.eid }}">Archive</button>
-                            {% elif member['active'] == 'false' %}
-                                <button class="btn btn-outline-success btn-xs" type="submit" formaction="/activate/{{ member.eid }}">Activate</button>
-                            {% endif %}
-                            </td>
-                            <td>
-                                <button class="btn btn-outline-primary btn-xs" type="submit" formaction="/view_member/{{ member.eid }}">Edit</button>
-                            </td>
-                        </tr>
-                    {% endfor %}
                     </table>
                 </div>
             </div>

@@ -1,5 +1,5 @@
 window.search = () ->
-    input = document.getElementById('searchNames')
+    input = document.getElementById("searchNames")
     filter = input.value.toUpperCase()
 
     # Select the active members' table rows.
@@ -10,6 +10,7 @@ window.search = () ->
     tableInactive = document.getElementById("table-inactive")
     trInactive = tableInactive.getElementsByTagName("tr")
 
+    # Loop through all table rows, and hide those who don't match the search query
     find = (trs) ->
         for tr, i in trs
             for td in tr.getElementsByTagName("td")
