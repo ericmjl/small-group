@@ -1,19 +1,15 @@
 import os
 import os.path as op
-
 from collections import Counter, defaultdict
 
-from flask import Flask, render_template, request, redirect
-
-from member import Member
-
-from smallgroup import SmallGroup
-
-from tinydb import Query, TinyDB
-
+from bokeh.embed import components
 from bokeh.models import ColumnDataSource
 from bokeh.plotting import figure
-from bokeh.embed import components
+from flask import Flask, redirect, render_template, request
+from tinydb import Query, TinyDB
+
+from member import Member
+from smallgroup import SmallGroup
 
 # Initial checks
 # 1. Make sure there is a ".smallgroup/" directory under the home dir.

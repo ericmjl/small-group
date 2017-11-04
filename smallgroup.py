@@ -1,7 +1,8 @@
-from collections import defaultdict, Counter
-from sdi import sdi
-from random import shuffle, choice, sample
 import math
+from collections import Counter, defaultdict
+from random import choice, sample, shuffle
+
+from sdi import sdi
 
 
 class SmallGroup(object):
