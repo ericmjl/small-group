@@ -104,7 +104,7 @@ def main():
     The main page. Lists all the group members.
     """
     active, inactive = split_members_by_active()
-    return render_template('index.html',
+    return render_template('index.html.j2',
                            all_members=db.all(),
                            active=active,
                            inactive=inactive)
@@ -131,7 +131,7 @@ def activate(id):
 @app.route('/view_member/<int:id>', methods=['POST'])
 def view_member(id):
     member = db.get(eid=id)
-    return render_template('form.html',
+    return render_template('form.html.j2',
                            member=member,
                            faith_statuses=FAITH_STATUSES,
                            roles=ROLES)
@@ -149,7 +149,7 @@ def add():
     """
     The page used to add one member to the group.
     """
-    return render_template('form.html',
+    return render_template('form.html.j2',
                            member=None,
                            faith_statuses=FAITH_STATUSES,
                            roles=ROLES)
@@ -222,24 +222,24 @@ def shuffle():
         assert has_one_believer(members)
     except AssertionError:
         error_msg = "There are no baptized disciples to lead Bible study."
-        return render_template('error.html', error_msg=error_msg)
+        return render_template('error.html.j2', error_msg=error_msg)
 
     try:
         assert has_one_facilitator(members)
     except AssertionError:
         error_msg = "There are no facilitators to lead BIble study."
-        return render_template('error.html', error_msg=error_msg)
+        return render_template('error.html.j2', error_msg=error_msg)
 
     try:
         assert len(members) > 5
         g = SmallGroup(members)
         g.distribute_group_members()
         print(g.groups)
-        return render_template('shuffle.html', groups=g.groups)
+        return render_template('shuffle.html.j2', groups=g.groups)
 
     except AssertionError:
         error_msg = 'There are fewer than 6 people; no need to shuffle.'
-        return render_template('error.html', error_msg=error_msg)
+        return render_template('error.html.j2', error_msg=error_msg)
 
 
 @app.route('/sync', methods=['POST'])
@@ -257,7 +257,7 @@ def data():
     View page for the data.
     """
     bokehplots = members_summary()
-    return render_template('data.html', bokehplots=bokehplots)
+    return render_template('data.html.j2', bokehplots=bokehplots)
 
 
 if __name__ == '__main__':

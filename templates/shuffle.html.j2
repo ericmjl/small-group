@@ -1,0 +1,22 @@
+{% extends "master.html.j2" %}
+
+{% block page_title %}MITCEF 小羊组{% endblock %}
+
+{% block content %}
+
+<div class="form-group">
+{% for group_num, group_members in groups.items() %}
+    <h4>Group {{ group_num + 1}}</h4>
+    <ul>
+        {% for member in group_members %}
+            {% if member.faith_status == 'baptized' %}
+                <li class="text-primary">{{ member }}</li>
+            {% elif member.faith_status == 'believer' %}
+                <li class="text-primary">{{ member }}</li>
+            {% else %}
+                <li class="text-danger">{{ member }}</li>
+            {% endif %}
+        {% endfor %}
+    </ul>
+{% endfor %}
+{% endblock %}
