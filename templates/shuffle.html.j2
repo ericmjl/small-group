@@ -9,7 +9,9 @@
     <h4>Group {{ group_num + 1}}</h4>
     <ul>
         {% for member in group_members %}
-            {% if member.faith_status == 'baptized' %}
+            {% if member.role in ['facilitator', 'counselor'] %}
+                <li class="text-success">{{ member }}</li>
+            {% elif member.faith_status == 'baptized' %}
                 <li class="text-primary">{{ member }}</li>
             {% elif member.faith_status == 'believer' %}
                 <li class="text-primary">{{ member }}</li>
