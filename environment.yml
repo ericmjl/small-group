@@ -11,3 +11,4 @@ dependencies:
 - boto3
 - awscli
 - ipython
+- bokeh
