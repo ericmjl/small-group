@@ -11,6 +11,9 @@ from tinydb import Query, TinyDB
 from member import Member
 from smallgroup import SmallGroup
 
+import boto3
+import yaml
+
 # Initial checks
 # 1. Make sure there is a ".smallgroup/" directory under the home dir.
 db_dir = op.join(os.environ['HOME'], '.smallgroup')
@@ -18,11 +21,15 @@ if not op.isdir(db_dir):
     os.mkdir(db_dir)
 
 db_path = op.join(db_dir, 'members.json')
+config_path = op.join(db_dir, 'config.yaml')
 
-# 2. Make sure the data are synced.
-os.system('bash sync.sh')
+# 2. Grab the latest data from AWS.
+with open(config_path, 'r+') as f:
+    config = yaml.load(f)
+s3 = boto3.resource('s3')
+s3.Bucket(config['bucket_name']).download_file(config['file_key'], db_path)
 
-# Initialize the app with the database.
+# Now, we initialize the app with the database.
 app = Flask(__name__)
 db = TinyDB(db_path)
 
@@ -116,7 +123,7 @@ def archive(id):
     Archives the member.
     """
     db.update({'active': 'false'}, eids=[id])
-    return redirect('/')
+    return redirect('/upload')
 
 
 @app.route('/activate/<int:id>', methods=['POST'])
@@ -125,7 +132,7 @@ def activate(id):
     Activates the member.
     """
     db.update({'active': 'true'}, eids=[id])
-    return redirect('/')
+    return redirect('/upload')
 
 
 @app.route('/view_member/<int:id>', methods=['POST'])
@@ -141,7 +148,7 @@ def view_member(id):
 def update_member(id):
     for k, v in request.form.items():
         db.update({k: v}, eids=[id])
-    return redirect('/')
+    return redirect('/upload')
 
 
 @app.route('/add')
@@ -164,7 +171,7 @@ def add_member():
     for s in MEMBER_SIGNATURE:
         data[s] = request.form[s]
     db.insert(data)
-    return redirect('/')
+    return redirect('/upload')
 
 
 @app.route('/delete/<int:id>', methods=['POST'])
@@ -173,7 +180,7 @@ def delete(id):
     Deletes a member from the database.
     """
     db.remove(eids=[id])
-    return redirect('/')
+    return redirect('/upload')
 
 
 def has_one_believer(members):
@@ -242,12 +249,12 @@ def shuffle():
         return render_template('error.html.j2', error_msg=error_msg)
 
 
-@app.route('/sync', methods=['POST'])
-def sync():
+@app.route('/upload')
+def upload():
     """
     Forces a sync of the database with GitHub.
     """
-    os.system('bash sync.sh')
+    s3.Bucket(config['bucket_name']).upload_file(db_path, config['file_key'])
     return redirect('/')
 
 
