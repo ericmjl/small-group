@@ -1,6 +1,7 @@
 # Database File
 members.json
 members.csv
+.mypy_cache/*
 
 # Sublime Text
 *.sublime*
