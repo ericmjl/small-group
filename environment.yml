@@ -12,3 +12,4 @@ dependencies:
 - awscli
 - ipython
 - bokeh
+- mypy
