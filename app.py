@@ -221,6 +221,7 @@ def shuffle():
 
         for s in MEMBER_SIGNATURE[:-1]:
             data[s] = member_data[s]
+        data['id'] = int(id)
 
         members.append(Member(**data))
 

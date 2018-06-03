@@ -82,31 +82,54 @@ class SmallGroup(object):
                 print('not pass')
                 self.propose_swap()
 
-    def find_member(self, first_name):
+    def find_member(self, first_name=None, id=None):
         """
-        Finds a member by their first name.
+        Finds a member by their first name or ID.
         """
+        assert first_name is not None or id is not None, \
+            "`first_name` or `id` must be provided."
         member = None
-        for m in self.members:
-            if m.name == first_name:
-                member = m
+        if first_name:
+            for m in self.members:
+                if m.name == first_name:
+                    member = m
+        elif id:
+            for m in self.members:
+                if m.id == id:
+                    member = m
         return member
 
     def passed_rejection_criteria(self):
-        passed1 = self.two_members_not_in_same_group('Fang', 'Mengyi')
-        passed2 = self.two_members_not_in_same_group('Yufeng', 'Jingyuan')
+        """
+        Define all of the rejection criteria here. They are hard-coded in the
+        program.
+        """
+        passed1 = self.two_members_not_in_same_group(7, 192)
 
-        return all([passed1, passed2])
+        return all([passed1])
 
-    def two_members_not_in_same_group(self, mbr1, mbr2):
+    def two_members_not_in_same_group(self, mbr1: int, mbr2: int) -> bool:
+        """
+        Boolean of whether two members are not in the same group.
+
+        Returns True if they are not in the same group, and False if they are
+        in the same group.
+
+        TODO: This functionality is currently broken. See code annotation below
+        for more information.
+        """
+        # Defensive programming checks
+        assert isinstance(mbr1, int), "mbr1 must be an integer"
+        assert isinstance(mbr2, int), "mbr2 must be an integer"
+
         passed = False
-        member1 = self.find_member(mbr1)
-        member2 = self.find_member(mbr2)
+        member1 = self.find_member(id=mbr1)
+        member2 = self.find_member(id=mbr2)
 
         if member1 and member2:
             for g, members in self.groups.items():
-                has_member1 = member1 in members
-                has_member2 = member2 in members
+                has_member1 = member1 in members  # TODO: code is broken here.
+                has_member2 = member2 in members  # TODO: and broken here
                 if not has_member1 and has_member2:
                     passed = True
         else:
