@@ -2,6 +2,20 @@
 
 {% block page_title %}MITCEF 小羊组{% endblock %}
 
+{% block bokehcss %}
+<!-- Bokeh -->
+<link href="http://cdn.pydata.org/bokeh/release/bokeh-{{ bkversion }}.min.css" rel="stylesheet" type="text/css">
+<link href="http://cdn.pydata.org/bokeh/release/bokeh-widgets-{{ bkversion }}.min.css" rel="stylesheet" type="text/css">
+{% endblock bokehcss %}
+
+{% block bokehjs %}
+
+<script src="http://cdn.pydata.org/bokeh/release/bokeh-{{ bkversion }}.min.js"></script>
+<script src="http://cdn.pydata.org/bokeh/release/bokeh-widgets-{{ bkversion }}.min.js"></script>
+
+
+{% endblock bokehjs %}
+
 {% block content %}
 <!-- This is the "summary statistics" part of the page. -->
 <div class="row">
@@ -19,15 +33,15 @@
 </div>
 <div class="row">
     <div class="col-md-4">
-        {{ bokehplots['pg']['script']|indent(4)|safe }}
+        {{ bokehplots['pg']['script']|safe }}
         {{ bokehplots['pg']['div']|safe }}
     </div>
     <div class="col-md-4">
-        {{ bokehplots['pf']['script']|indent(4)|safe }}
+        {{ bokehplots['pf']['script']|safe }}
         {{ bokehplots['pf']['div']|safe }}
     </div>
     <div class="col-md-4">
-        {{ bokehplots['pr']['script']|indent(4)|safe }}
+        {{ bokehplots['pr']['script']|safe }}
         {{ bokehplots['pr']['div']|safe }}
     </div>
 </div>
