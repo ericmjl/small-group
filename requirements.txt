@@ -6,3 +6,4 @@ holoviews
 bokeh
 gunicorn
 python-dotenv
+psycopg2
