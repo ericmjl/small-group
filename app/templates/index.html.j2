@@ -13,10 +13,6 @@
             <button class="btn btn-success btn-lg" type="submit" formaction="/shuffle">
                 <i class="fa fa-random" aria-hidden="true"></i>分组
             </button>
-            <!-- <button class='btn btn-primary btn-lg' type="submit" formaction="/upload">
-                <i class="fa fa-refresh" aria-hidden="true"></i>同步
-            </button> -->
-            <a href="/upload" class="btn btn-primary btn-lg"><i class="fa fa-refresh" aria-hidden="true"></i>同步</a>
         </div>
     </div>
 
@@ -54,11 +50,11 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for member in member_type %}
+                            {% for member in member_type|sort(attribute='id') %}
                                 <tr class="table" id="table-member">
-                                <td>{{ member.eid }}</td>
+                                <td>{{ member.id }}</td>
                                 <td>{{ member['surname'] }}</td>
-                                <td>{{ member['name'] }}</td>
+                                <td>{{ member['given_name'] }}</td>
                                 <td>{{ member['gender'] }}</td>
                                 <td>{{ member['faith_status'] }}</td>
                                 <td>{{ member['role'] }}</td>
@@ -72,17 +68,17 @@
                                     <td> </td>
                                 {% endif %}
                                 <td>
-                                    <input type="checkbox" font-size: 50px name="present.{{ member.eid }}" value="{{ member.eid }}"></input>
+                                    <input type="checkbox" font-size: 50px name="present.{{ member.id }}" value="{{ member.id }}"></input>
                                 </td>
                                 <td>
                                 {% if member['active'] == 'true' %}
-                                    <button class="btn btn-outline-danger btn-xs" type="submit" formaction="/archive/{{ member.eid }}">Archive</button>
+                                    <button class="btn btn-outline-danger btn-xs" type="submit" formaction="/archive/{{ member.id }}">Archive</button>
                                 {% elif member['active'] == 'false' %}
-                                    <button class="btn btn-outline-success btn-xs" type="submit" formaction="/activate/{{ member.eid }}">Activate</button>
+                                    <button class="btn btn-outline-success btn-xs" type="submit" formaction="/activate/{{ member.id }}">Activate</button>
                                 {% endif %}
                                 </td>
                                 <td>
-                                    <button class="btn btn-outline-primary btn-xs" type="submit" formaction="/view_member/{{ member.eid }}">Edit</button>
+                                    <button class="btn btn-outline-primary btn-xs" type="submit" formaction="/view_member/{{ member.id }}">Edit</button>
                                 </td>
                             </tr>
                             {% endfor %}

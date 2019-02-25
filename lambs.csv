@@ -1,0 +1,219 @@
+,name,surname,gender,faith_status,role,active,notes
+0,Maggie,C,F,believer,none,false,Boston University Art History undergrad
+1,Christina,Chen,F,baptized,none,false,MIT Architecture Masters entered 2014
+2,Yu,Chen,M,baptized,facilitator,false,陈宇 Boston Architectural College Masters entered 2015
+3,Xinyi,Chen,F,seeker,none,false,Visiting MIT. Returned to Tongji University in April 2016.
+4,Fang,Ding,F,baptized,counselor,false,UMass Boston Education 2014
+5,Qi,Guo,M,baptized,facilitator,true,Harvard EECS PhD entered 2015
+6,Tianyi,Huang,F,baptized,facilitator,true,黄天仪 MIT EAPS PhD entered 2015
+7,Yufeng,Ji,M,baptized,facilitator,false,Northeastern University. Returned to China at the end of June 2016.
+8,Nan,Li,F,baptized,counselor,true,"李楠 MIT Math PhD, finished 2013"
+9,Yi,Lu,M,seeker,none,false,卢祎，MIT EECS PhD entered 2015
+10,Eric,Ma,M,baptized,counselor,true,"MIT BE PhD entered 2011, graduated 2017."
+11,Yu-yang-guang,Mu,F,baptized,facilitator,false,Harvard Architecture entered 2015
+12,Junyi,Ouyang,M,baptized,facilitator,false,UMass Boston Accounting 2016
+13,Yanlin,Qiao,F,baptized,facilitator,false,UMass Boston graduated in 2015 December.
+14,Michelle,Shih,F,baptized,facilitator,false,施欣予 MIT MBA entered 2015
+15,Zhecan (James),Wang,M,believer,none,false,王哲灿 Olin College of Engineering
+16,Chunyao,Wei,M,seeker,none,false,Northeastern Architecture. Has returned back to China.
+17,Liang,Xiang,F,baptized,facilitator,false,相良 MIT Master of Finance
+18,Mengyi,Yu,F,believer,none,false,Northeastern Mathematics.
+19,Peng,Zhang,M,seeker,none,false,Visiting MIT until January 2017. Returned to Tsinghua University in Jan 2017.
+20,Ning,Qiao,M,baptized,counselor,true,乔帮主！
+21,Fei,Liu,M,seeker,none,false,"Chen Yu's friend, coming to BAC in September."
+22,Aaron,Xu,M,baptized,none,false,Coming to Harvard in September for JD.
+23,Hong,Zhou,M,baptized,none,false,"Lu Yi's friend, from Waterloo University."
+24,Yimeng,Ting,F,unknown,none,false,Babson College
+25,Yaoguang,Jia,F,seeker,none,false,Harvard EECS Masters student. Knows Guo Qi.
+26,Yingchun,Liu,F,seeker,none,false,Northeastern Masters student
+27,Peter,Chen,M,baptized,none,false,Interviewed at MIT EECS in 2016; ultimately decided to go to Columbia University.
+28,Xiaoxuan,Chu,F,believer,none,false,"UMass Amherst, 2nd year"
+29,Vivian,Sun,F,seeker,none,false,"Yanlin's friend, classmate. UMass Boston 3rd year."
+30,Jingyuan,Zhang,F,baptized,facilitator,false,"Ji Yufeng's girlfriend. Grad of Suffolk Univ; going back to China after graduation, in July. Returned to China 9 July 2016."
+31,Yu,Jin,F,baptized,none,false,Arrived in the summer.
+32,Yan,Jiang,F,baptized,none,false,Arrived in the summer. Faith - almost there! (ding fang). Tufts Univ. art education
+33,Brian,Lin,M,baptized,facilitator,false,Columbia Univ CS Student. Intern in Cambridge for 2016 summer.
+34,Jiawei,Zhou,M,seeker,none,false,Guo Qi's classmate
+35,Ju Ta,Pan,M,baptized,counselor,false,Our church pastor.
+36,Amy,Chen,F,unknown,none,false,Graduating this year.
+37,Jia-En,Chen,M,baptized,none,false,"Visiting from Taiwan, at Media Lab."
+38,Yi,Xie,M,seeker,none,false,Just graduated from Princeton.
+39,Wenyi,Guo,F,seeker,none,false,Brandeis University Student
+40,Zheyi,Wu,M,unknown,none,false,Tianyi's friend
+41,Yuntian,Deng,M,unknown,none,false,Guo Qi's friend. Going to Harvard to study PhD (NLP).
+42,Huarui,Wu,M,unknown,none,false,"吴华锐 Visiting scholar, PhD. Returning to China in August 2016."
+43,Guan Nan,Dong,F,unknown,none,false,董冠男. On exchange at MIT until August 2016.
+44,Siyuan,Sui,M,unknown,none,false,"隋思远. USTC 3rd year student, knows Tianyi. On exchange until August 2016."
+45,Xin,Yao,M,baptized,none,false,"姚鑫 Brandeis University, CS."
+46,Xuyang,Zhang,F,seeker,none,false,张旭阳. Brandeis Univ Finance Masters student.
+47,Cong,Du,M,seeker,none,false,"杜聪，UMass Lowell, EECS. Summer intern. Went to Lowell fellowship before."
+48,Ye,Tian,M,unknown,none,false,
+49,Chengxuan,Li,M,seeker,none,false,Nanchang Univ. 2nd year.
+50,Ying,Zuo,F,seeker,none,false,
+51,Yongli,Zhou,M,seeker,none,false,"USTC 3rd year, Environmental Science, visiting EAPS for summer."
+52,Jinjin,Pan,F,baptized,none,false,潘津津 UMass Accounting
+53,Na,Xu,F,unknown,none,false,BU PhD Student
+54,Xinjia (Flora),Wang,F,unknown,none,false,"2nd year, Tufts summer session, Religious Philosophy, studying at Beijing Shifan University"
+55,Yanni,Ma,F,baptized,none,true,麻燕妮，Harvard GSD. Entered 2016 September.
+56,Qing,Lu,F,baptized,none,false,Brandeis Post-Doc just started.
+57,Robin,Zhao,M,unknown,none,false,Bentley Univ. Masters Student
+58,Ai,Xu,F,seeker,none,false,徐艾 Harvard School of Public Health
+59,David,Zhu,M,unknown,none,false,"Olin College, James' senior by 1 year."
+60,Kexin可欣,Yi易,M,seeker,none,false,"Harvard Physics PhD student, 2016-"
+61,Jaclyn,Li,F,unknown,none,false,Harvard University 1st year.
+62,Ang-Yu,Lu,M,seeker,none,false,MIT EECS
+63,Chuliang,Song,M,seeker,none,false,"宋楚良, MIT"
+64,Ya-Lien,Hsu,M,seeker,none,false,Wife of Ang-Yu
+65,久磨,石,M,baptized,none,false,Visiting Scholar @ MIT
+66,Ruoxi,Wang,F,baptized,facilitator,true,王若溪 MIT Biology PhD entered 2016 Fall
+67,Jingzhi京之,Chen陈,F,baptized,none,false,Guo Qi's friend from ACCCF.
+68,Siyi,Zhao,F,baptized,none,false,From ACCCF (Austin). Knows Guo Qi
+69,Ruibin,Li,M,baptized,none,false,"李瑞斌, Chen Yu's schoolmate (BAC)"
+70,Ting,Wang,F,seeker,none,false,王汀 MIT RA
+71,Xu,Yang,M,baptized,facilitator,true,杨栩，Boston College Physics PhD entered 2015
+72,Fuxi,Kang,F,baptized,none,false,
+73,Zhenqiang,Li,M,baptized,none,false,
+74,Betty,Ding,F,baptized,none,false,
+75,Cheng,Zeng,F,seeker,none,false,Yangguang's classmate at Harvard
+76,Xiaohan,Wu,F,seeker,none,false,Yangguang's classmate at Harvard
+77,Pengfei,Ma,M,seeker,none,false,
+78,Sherry (Xueling),Kou,F,unknown,none,false,"High school student in Concord, NH"
+79,Lechen,Qian,F,seeker,none,false,"钱乐琛 One of Chao's students from Shanghai Tech, currently on exchange at Harvard."
+80,Long,Hao,M,seeker,none,false,"One of Chao's students from Shanghai Tech, currently on exchange at Harvard."
+81,Joe世杰,Gu,M,seeker,none,false,"One of Chao's students from Shanghai Tech, currently on exchange at Harvard."
+82,Willow,Wei,F,seeker,none,false,"魏心怡 Harvard 3rd year, Journalism, from Guangzhou, Guangdong."
+83,Enjing,Xu,M,seeker,none,false,"Ai's friend, Harvard PhD student."
+84,Yizhen,Xie,F,seeker,none,false,"谢奕祯 From PKU, exchange at Harvard."
+85,Chan,Lu,F,seeker,none,false,Harvard School of Public Health Epi Masters
+86,Yang,Tian,F,seeker,none,false,Earth Science 5th year PhD Student
+87,Ding,Liu,M,seeker,none,false,Lechen's 师兄
+88,Siming,Zhong,F,seeker,none,false,"钟思敏，Jinjin's friend, UMB."
+89,Yuxi,Qin,M,baptized,none,false,秦宇熙，Yangguang's classmate.
+90,Minghua,Zhuo,F,seeker,none,false,禚明华，Tufts Post-Doc
+91,Vincent,Weng,M,unknown,none,false,Tufts CS 4th year
+92,Xiaojiao,Chen,F,baptized,none,false,Exchange student @ MIT. Jan 2017-Jan 2018.
+93,Jiarui,Liu,M,unknown,none,false,"MIT Internship, UCLA Internship"
+94,Fei,Liu,M,baptized,none,false,From New York - intern in Boston
+95,Bin,Guo,F,believer,none,false,Jiang Yan's classmate.
+96,Siyu,Liu,M,believer,none,false,"From NTU (Singapore), Mechanical Engineering, intern at MIT 1 year."
+97,Shuan-wei,Cui,M,seeker,none,false,"Visiting MIT MechE, 崔栓伟"
+98,Lucy,Han,F,baptized,facilitator,false,"Gordon Conwell Master's student, from Singapore"
+99,Hongyuan,Zhang,F,seeker,none,false,Harvard Summer School
+100,Delong,Meng,M,baptized,none,false,Ex-MIT CEF student. Stanford Economics PhD. 孟德隆
+101,Shu,Li,F,seeker,none,false,"Visiting student, Art Philosophy PhD"
+102,Wang,Laoshi,M,baptized,counselor,false,
+103,Jingrui,Li,F,baptized,none,false,李京睿，visiting from Duke Univ.
+104,Yongxiang,Xu,M,seeker,none,false,许永祥，煤炭科学研究总院，访学
+105,Shuo,Yang,M,baptized,facilitator,false,杨硕，Yanni's husband
+106,Siyi,Ye,F,baptized,facilitator,false,Harvard Master of Education，叶思翌
+107,Liyuan,Liu,F,baptized,none,false,哲学博士交换生，BU，刘莉源
+108,Renbin,Liu,M,baptized,facilitator,true,刘仁斌，MIT Undergrad
+109,Yun,Zhu,F,baptized,none,false,朱云（？），Harvard，认识郭齐，HSPH
+110,Jiayang,Sun,F,baptized,none,false,孙佳阳，哈佛交换生，本科，来自黑龙江，在西安念书
+111,Zhichuang,Sun,M,baptized,facilitator,true,孙志创，东北大学，CS PhD
+112,Tim,,M,baptized,none,false,MIT Sloan MBA
+113,Mengfei,Li,F,seeker,none,true,李孟霏，Yanni's friend
+114,Chloe,Han,F,unknown,none,false,王哲灿的朋友
+115,Canghai,Ji,M,seeker,none,false,纪沧海
+116,Yuuie,,F,seeker,none,false,"Harvard Graduate School of Education, Master's Student"
+117,Wenjing,Wu,F,unknown,none,false,Harvard Education
+118,Johnathon,Jiang,M,baptized,none,false,"Just graduated, looking for jobs now."
+119,Cangjian,Cao,M,seeker,none,false,
+120,Jian,Cui,M,baptized,facilitator,true,崔健，BU MBA
+121,Yuan,Zhuang,F,baptized,facilitator,false,庄园，与崔健一家，Master‘s student @ BU
+122,Zirui,Wang,F,seeker,none,false,Jiayang's friend.
+123,Stephanie,Zhang,F,believer,none,false,"Johnathon's girlfriend, studies at Harvard"
+124,Fangfan,Li,M,seeker,none,false,Gao Ang's BF
+125,Yuting,Huang,F,seeker,none,false,"Tina, Harvard PhD student, Weitz Lab"
+126,Zhe,Dong,F,seeker,none,false,"Master's of Statistics in Texas, graduated 2017. "
+127,Yijian,Mei,M,baptized,none,false,Theology student.
+128,Coco,Liu,F,seeker,none,false,NEU Student
+129,Ge,Ying,F,unknown,none,false,"Economics, PKU, visiting Kennedy School"
+130,Xiaoyi,Liu,F,unknown,none,false,Visiting friend Ying Ge.
+131,Siyu,Chen,M,seeker,none,false,"Post-doc, just finished PhD."
+132,Wen,Li,M,unknown,none,false,"Visiting scholar @ MIT EECS, research in AI, from Beijing."
+133,Aihui,Zhang,F,believer,none,true,"Charity, Harvard GSD"
+134,Yizhen,Wang,F,baptized,none,false,Ex-BSF-er!
+135,Angela,,F,baptized,none,false,Visiting from BSF with Yizhen!
+136,Dong,Yin,M,seeker,none,false,"印东, Guo Qi's ex-roommate from Tsinghua."
+137,Lianfeng,Zhao,M,baptized,none,false,"Guo Qi's friend, PhD Material Science at Princeton"
+138,Heyang,Yin,F,seeker,none,false,"Studying in Boston, Siyi's friend from Harvard Graduate School of Education."
+139,Jiawei,Zhou,M,seeker,none,false,PhD in Boston.
+140,Lisa,Wu,F,unknown,none,false,Harvard Education MSc.
+141,Hui,Sun,F,believer,none,false,"MIT PhD 1st year, attended church in California"
+142,Yijin,Wei,F,unknown,none,false,Computational engineering
+143,Xiaoqing,,F,unknown,none,false,
+144,Kun,Zhang,F,unknown,none,false,Harvard GSD Master
+145,Tiffany,Shen,F,believer,none,false,Tufts 1st year student
+146,Julie,,F,seeker,none,false,"From California, Tufts 1st year"
+147,Malina,Lin,F,seeker,none,false,"From South Carolina, Tufts 1st year."
+148,Xiaocheng,Chen,F,unknown,none,false,Harvard GSE - Siyi's classmate.
+149,Haoran,Chen,M,baptized,none,false,"Siyi's friend, from NYU, visiting for weekend of 9 March 2018"
+150,Hui,Liu,F,baptized,none,false,"Siyi's friend, Harvard Graduate School of Education."
+151,Zhenyang,Feng,M,unknown,none,false,"Zhecan's friend, Exchange student @ Olin, from Shanghai Jiaotong University"
+152,Kevin (Zhekai),Hu,M,believer,none,false,"胡哲凯, Visiting student at Tufts, from SJTU (Shanghai)"
+153,Haozhe,Wang,M,seeker,none,false,孔老师的学生，MIT EECS 2015年入学
+154,Yi,Lin,M,baptized,facilitator,false,From BSF. Observing on 27 April 2018.
+155,Xiaoyue,Wang,M,baptized,none,false,From BSF. Observing on 27 April 2018.
+156,Li,He,M,unknown,none,false,"Northeastern University, James' cousin"
+157,Ziyuan,Chen,M,unknown,none,false,"Siyi's friend, girlfriend is Tracy"
+158,Lucy,Chen,F,unknown,none,false,"Siyi's classmate, Harvard GED."
+159,Tracy,,F,unknown,none,false,Siyi's classmate.
+160,Zhihui,Wang,F,baptized,none,false,"Siyi's friend, from San Francisco. Facebooker. Visiting Siyi over a weekend."
+161,Hongye,Jiang,F,unknown,none,false,MGH PhD student
+162,Yurun,Cai,F,unknown,none,false,UMass Boston PhD Student
+163,Keshu,Pan,M,baptized,none,false,Harvard School of Theology
+164,Chuqiu,Peng,F,seeker,none,true,Harvard School of Theology
+165,Ji-Ting,Jiang,M,unknown,none,false,Tufts Master's Student
+166,Teng,Bian,M,baptized,none,false,"Studying PhD in Indiana, Yang Xu's friend."
+167,Xiaoting,Zeng,F,unknown,none,false,"From Taiwan, New England College of Optometry"
+168,Meijuan,Wang,F,seeker,none,false,Suffolk University Student
+169,Jingyi,Ke,F,seeker,none,false,Harvard GSE
+170,Yuman,Xu,F,unknown,none,false,Harvard GSE
+171,Xianxin,Zhang,M,unknown,none,false,Purdue Pharmacy Student
+172,Shuo,Yang,F,seeker,none,false,Northeastern
+173,Coco,,F,seeker,none,false,"From Ottawa, Christina Chen's friend."
+174,Hanyu,Zhang,F,seeker,none,false,En route
+175,Josh,Deng,M,seeker,none,false,"Olin College of Engineering, 1st year"
+176,Zhitao,Yu,M,seeker,none,false,"UW PhD, Robotics."
+177,Xinren,Tong,F,seeker,none,false,High school student in Seattle
+178,Manyuan,Lu,F,unknown,none,false,"1st year student, CS"
+179,Yuanjing,Ma,F,baptized,none,false,PhD Student
+180,Mengyan,Li,F,believer,none,false,"PhD Student, Statistics"
+181,Lu,Qian,F,unknown,none,false,Bucknell Univ. 3rd Year
+182,Sifang,Zheng,F,seeker,none,false,Entering Northeastern 1st Year in September
+183,Zi-ao,Ju,M,believer,none,false,"From Stanford, Economics."
+184,Zijun,Wei,M,seeker,none,false,"From Guangzhou, at MIT Media Lab, PhD student."
+185,Yunchao,Liu,M,seeker,none,false,Qinghua B.Sc. student
+186,Noah,,M,unknown,none,false,"Shanghai, 8th grader, came with family."
+187,Noah's mother,,F,unknown,none,false,Came with Noah
+188,Ren,Yi,F,baptized,none,false,"Came from Malden Fellowship, working in Boston"
+189,Yi-Tian,Qian,F,seeker,none,false,"From Suzhou, at Harvard for the summer."
+190,Richard,Duan,M,baptized,none,false,Tian's uncle.
+191,Siyuan,Cheng,M,unknown,none,false,"Just graduated, came here to find a job."
+192,En,Wang,M,baptized,none,false,"Studying in DC, came to Boston for a conference"
+193,Xinyi,Li,M,unknown,none,false,"李信义，visiting from Beijing, Grade 10 student."
+194,Jiaqi,Guo,M,unknown,none,false,NEU Masters Student
+195,Haiqing,He,F,believer,none,true,"Harvard GSE, Entry 2018"
+196,Yichun,Fan,F,unknown,none,false,"MIT Graduate Student, Urban Studies"
+197,Yinuo,Ji,M,unknown,none,false,"Duke University, Siyi's high school classmate."
+198,Zijia,Chen,F,seeker,none,true,"Northeastern University in Spring, currently studying language"
+199,Yuejun,He,F,unknown,none,false,"From Foshan, Guangdong. Exchange student @ MIT until End of November 2018."
+200,Bowen,Yan,F,unknown,none,false,"MIT Visiting Research Fellow, CS, from SUTD (Singapore)"
+201,Xiuyuan,Mi,F,believer,none,false,"PhD literature, U Penn, dissertataion research at Harvard visiting scholar."
+202,Jerry,Liu,M,unknown,none,false,BU grad
+203,Lin,Fang,F,unknown,none,false,Just graduated from Penn.
+204,Yiming,Cao,M,seeker,none,true,Bentley Student
+205,Cong,Wang,M,unknown,none,true,Bunker Hill Community College 1st year student (2018)
+206,Jiayi,Hu,F,seeker,none,false,Harvard GSE
+207,Xiaoye,Yang,F,unknown,none,false,"Jingyi's roomate, graduated from Harvard GSE"
+208,Julia,Zhu,F,unknown,none,false,Gordon Conwell Student
+209,Yue,Yu,F,unknown,none,true,MIT EECS Visiting Student
+210,Yun-er,Ye,F,unknown,none,true,Business Analytics Master's Student
+211,Xiaopeng,Zhong,M,unknown,none,true,"Exchange student at MIT EECS, PhD Student "
+212,Zhengrui,Yu,M,unknown,none,false,"From Beijing, visiting scholar for 1 year"
+213,Fanwen,Zhu,M,unknown,none,true,Research assistant at MIT Sloan
+214,Kingsley,Fung,M,unknown,none,true,BAC Student
+215,Yingzhao,Zhou,F,seeker,none,true,"Northeastern University PhD student in Cognitive Psychology, 4th year in 2018."
+216,Mingxin,Liang,F,seeker,none,true,"梁明欣, NEU Student in Telecommunications Studies"
+217,Chao,Zhou,M,seeker,none,true,NEU Student

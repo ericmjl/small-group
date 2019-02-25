@@ -2,11 +2,12 @@ import math
 from collections import Counter, defaultdict
 from random import choice, sample, shuffle
 
-from sdi import sdi
+from .sdi import sdi
 
 
 class SmallGroup(object):
     """docstring for SmallGroup"""
+
     def __init__(self, members):
         super(SmallGroup, self).__init__()
         self.members = members
@@ -18,11 +19,12 @@ class SmallGroup(object):
         """
         Criteria should be one of: 'gender', 'faith_status'
         """
-        assert criteria in ['gender', 'faith_status', 'role']
+        assert criteria in ["gender", "faith_status", "role"]
         sdis = dict()
         for group, members in self.groups.items():
-            genders = Counter(eval("[m.{0} for m in members]"
-                                   .format(criteria)))
+            genders = Counter(
+                eval("[m.{0} for m in members]".format(criteria))
+            )
             sdis[group] = sdi(genders)
 
         return sdis
@@ -35,7 +37,7 @@ class SmallGroup(object):
         return sum(sdis.values())
 
     def summed_shannon_diversity(self):
-        criteria = ['gender', 'faith_status', 'role']
+        criteria = ["gender", "faith_status", "role"]
         sum_sdi = 0
         for c in criteria:
             sum_sdi += self.criteria_shannon_diversity(c)
@@ -55,15 +57,18 @@ class SmallGroup(object):
 
         # First, assign facilitators amongst the groups.
         for m in self.unassigned_members:
-            if ((m.role == 'facilitator' or m.role == 'counselor') and
-                    (m not in self.assigned_members) and
-                    (count < num_groups)):
+            if (
+                (m.role == "facilitator" or m.role == "counselor")
+                and (m not in self.assigned_members)
+                and (count < num_groups)
+            ):
                 self.groups[count].append(m)
                 self.assigned_members.append(m)
                 count += 1
 
-        self.unassigned_members = set(self.unassigned_members) -\
-            set(self.assigned_members)
+        self.unassigned_members = set(self.unassigned_members) - set(
+            self.assigned_members
+        )
         self.unassigned_members = list(self.unassigned_members)
 
         count = 0
@@ -75,19 +80,20 @@ class SmallGroup(object):
                 count += 1
 
         for i in range(1000):
-            print('Swap {0}'.format(i))
+            print("Swap {0}".format(i))
             self.propose_swap()
             print(self.summed_shannon_diversity())
             if not self.passed_rejection_criteria():
-                print('not pass')
+                print("not pass")
                 self.propose_swap()
 
     def find_member(self, first_name=None, id=None):
         """
         Finds a member by their first name or ID.
         """
-        assert first_name is not None or id is not None, \
-            "`first_name` or `id` must be provided."
+        assert (
+            first_name is not None or id is not None
+        ), "`first_name` or `id` must be provided."
         member = None
         if first_name:
             for m in self.members:

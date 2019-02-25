@@ -13,3 +13,11 @@ dependencies:
 - ipython
 - bokeh
 - mypy
+- flake8
+- pandas
+- python-dotenv
+- psycopg2
+- sqlalchemy
+- flask-sqlalchemy
+- pyjanitor
+- black
