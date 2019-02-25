@@ -5,3 +5,4 @@ pyjanitor
 holoviews
 bokeh
 gunicorn
+python-dotenv
