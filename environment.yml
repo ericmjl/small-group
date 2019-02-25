@@ -5,11 +5,8 @@ channels:
 - ericmjl
 dependencies:
 - flask
-- tinydb
 - pytest
 - python=3.6
-- boto3
-- awscli
 - ipython
 - mypy
 - flake8
