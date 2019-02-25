@@ -1,2 +1,6 @@
-Flask==0.12.2
-tinydb==3.6.0
+Flask
+pandas
+flask-sqlalchemy
+pyjanitor
+holoviews
+bokeh
