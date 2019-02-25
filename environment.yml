@@ -1,6 +1,7 @@
 name: smallgroup
 channels:
 - conda-forge
+- pkgs
 dependencies:
 - flask
 - pytest
