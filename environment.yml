@@ -1,15 +1,11 @@
 name: smallgroup
 channels:
 - conda-forge
-- defaults
-- ericmjl
+- pkgs
 dependencies:
 - flask
-- tinydb
 - pytest
 - python=3.6
-- boto3
-- awscli
 - ipython
 - mypy
 - flake8
@@ -19,6 +15,7 @@ dependencies:
 - sqlalchemy
 - flask-sqlalchemy
 - pyjanitor
+- nomkl  # added to save space on heroku
 - black
 - holoviews
 - bokeh
