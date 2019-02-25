@@ -10,13 +10,13 @@
     <ul>
         {% for member in group_members %}
             {% if member.role in ['facilitator', 'counselor'] %}
-                <li class="text-success">{{ member }}</li>
+                <li class="text-success">{{ member.given_name }} {{ member.surname }}</li>
             {% elif member.faith_status == 'baptized' %}
-                <li class="text-primary">{{ member }}</li>
+                <li class="text-primary">{{ member.given_name }} {{ member.surname }}</li>
             {% elif member.faith_status == 'believer' %}
-                <li class="text-primary">{{ member }}</li>
+                <li class="text-primary">{{ member.given_name }} {{ member.surname }}</li>
             {% else %}
-                <li class="text-danger">{{ member }}</li>
+                <li class="text-danger">{{ member.given_name }} {{ member.surname }}</li>
             {% endif %}
         {% endfor %}
     </ul>

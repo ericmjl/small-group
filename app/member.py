@@ -1,9 +1,18 @@
 class Member(object):
     """docstring for Member"""
-    def __init__(self, name: str, surname: str, gender: str, faith_status: str,
-                 role: str, notes: str, id: int) -> None:
+
+    def __init__(
+        self,
+        given_name: str,
+        surname: str,
+        gender: str,
+        faith_status: str,
+        role: str,
+        notes: str,
+        id: int,
+    ) -> None:
         super(Member, self).__init__()
-        self.name = name
+        self.given_name = given_name
         self.surname = surname
         self.gender = gender
         self.faith_status = faith_status
