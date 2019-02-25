@@ -4,3 +4,4 @@ flask-sqlalchemy
 pyjanitor
 holoviews
 bokeh
+gunicorn
