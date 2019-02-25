@@ -7,19 +7,11 @@
     <div class="row">
         <div class="col-md-12">
             <form method="POST" name="member-info">
-                <div name="id" class="form-group">
-                    {% if member %}
-                        <input type="hidden" name="id" value="{{ member.eid }}"></input>
-                    {% else %}
-                        <input type="hidden" name="id" value=""></input>
-                    {% endif %}
-                </div>
-
                 <div class="row" id="row-name">
-                    <div class="col-md-6" id="div-name">
-                        <div name="name" class="form-group">
-                            <label for="name">Name</label>
-                            <input class="form-control" name="name" value="{{ member['name'] }}"></input>
+                    <div class="col-md-6" id="div-given_name">
+                        <div name="given_name" class="form-group">
+                            <label for="given_name">Name</label>
+                            <input class="form-control" name="given_name" value="{{ member['given_name'] }}"></input>
                          </div>
                     </div>
                     <div class="col-md-6" id="div-surname">
@@ -99,8 +91,8 @@
                 </div>
 
                 {% if member %}
-                    <button class="btn btn-primary" type="submit" formaction="/update_member/{{ member.eid }}">Save Changes</button>
-                    <button class="btn btn-danger" type="submit" formaction="/delete/{{ member.eid }}">Delete Member</button>
+                    <button class="btn btn-primary" type="submit" formaction="/update_member/{{ member.id }}">Save Changes</button>
+                    <button class="btn btn-danger" type="submit" formaction="/delete/{{ member.id }}">Delete Member</button>
                 {% else %}
                     <button class="btn btn-success" name="save" type="submit" formaction="/add_member">Save Member</button>
                 {% endif %}
