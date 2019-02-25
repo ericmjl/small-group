@@ -1,8 +1,6 @@
-from collections import Counter, defaultdict
+from collections import defaultdict
 
 from bokeh.embed import components
-from bokeh.models import ColumnDataSource
-from bokeh.plotting import figure
 from bokeh import __version__ as bkversion
 from flask import Flask, redirect, render_template, request
 
@@ -15,9 +13,9 @@ import os
 import psycopg2
 import pandas as pd
 import holoviews as hv
-import janitor
+import janitor  # noqa: F401
 
-renderer = hv.renderer('bokeh')
+renderer = hv.renderer("bokeh")
 
 load_dotenv()
 
@@ -89,8 +87,6 @@ MEMBER_SIGNATURE = [
     "active",
 ]
 
-from bokeh.models.tickers import FixedTicker
-
 
 def members_summary():
     """
@@ -98,27 +94,21 @@ def members_summary():
 
     Returns the set of bokeh plots to show on the main interface.
     """
-    data = (
-        pd.read_sql("select * from lambs", con=conn)
-        .query('active == "true"')
+    data = pd.read_sql("select * from lambs", con=conn).query(
+        'active == "true"'
     )
 
-    gdata = (
-        pd.DataFrame(data.groupby('gender').size())
-        .rename_column(0, 'count')
+    gdata = pd.DataFrame(data.groupby("gender").size()).rename_column(
+        0, "count"
     )
-    fdata = (
-        pd.DataFrame(data.groupby('faith_status').size())
-        .rename_column(0, 'count')
+    fdata = pd.DataFrame(data.groupby("faith_status").size()).rename_column(
+        0, "count"
     )
-    rdata = (
-        pd.DataFrame(data.groupby('role').size())
-        .rename_column(0, 'count')
-    )
+    rdata = pd.DataFrame(data.groupby("role").size()).rename_column(0, "count")
 
-    pg = hv.Bars(gdata, kdims='gender', vdims='count')
-    pf = hv.Bars(fdata, kdims='faith_status', vdims='count')
-    pr = hv.Bars(rdata, kdims='role', vdims='count')
+    pg = hv.Bars(gdata, kdims="gender", vdims="count")
+    pf = hv.Bars(fdata, kdims="faith_status", vdims="count")
+    pr = hv.Bars(rdata, kdims="role", vdims="count")
 
     hvpg = renderer.get_plot(pg).state
     hvpf = renderer.get_plot(pf).state
