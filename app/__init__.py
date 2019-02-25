@@ -12,6 +12,12 @@ from dotenv import load_dotenv
 from flask_sqlalchemy import SQLAlchemy
 
 import os
+import psycopg2
+import pandas as pd
+import holoviews as hv
+import janitor
+
+renderer = hv.renderer('bokeh')
 
 load_dotenv()
 
@@ -22,9 +28,15 @@ DB_HOST = os.getenv("DB_HOST")
 DB_PORT = os.getenv("DB_PORT")
 
 
+dsn = f"postgres://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = f"postgres://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+app.config["SQLALCHEMY_DATABASE_URI"] = dsn  # noqa: E501
 db = SQLAlchemy(app)
+
+# We have a psycopg2 connection because the holoviews plots are best done
+# using pandas, and pandas read_sql requires a connection.
+conn = psycopg2.connect(dsn=dsn)
 
 
 class Lamb(db.Model):
@@ -39,8 +51,15 @@ class Lamb(db.Model):
     notes = db.Column(db.Text(1000))
 
     def __init__(
-        self, id, given_name, surname, gender, faith_status, role,
-        active, notes
+        self,
+        id,
+        given_name,
+        surname,
+        gender,
+        faith_status,
+        role,
+        active,
+        notes,
     ):
         self.id = id
         self.given_name = given_name
@@ -48,9 +67,9 @@ class Lamb(db.Model):
         self.gender = gender
         self.faith_status = faith_status
         self.role = role
-        if active == 'true':
+        if active == "true":
             self.active = True
-        elif active == 'false':
+        elif active == "false":
             self.active = False
         else:
             self.active = active
@@ -79,40 +98,35 @@ def members_summary():
 
     Returns the set of bokeh plots to show on the main interface.
     """
-    summary = defaultdict(Counter)
-    fields_of_interest = ["gender", "faith_status", "role"]
-    for m in Lamb.query.all():
-        if m.active == "true":
-            for s in fields_of_interest:
-                summary[s][m.__dict__[s]] += 1
-
-    gdata = dict(
-        xlabels=list(summary['gender'].keys()),
-        data=list(summary['gender'].values()),
-    )
-    print(gdata)
-
-    fdata = dict(
-        xlabels=list(summary['faith_status'].keys()),
-        data=list(summary['faith_status'].values())
+    data = (
+        pd.read_sql("select * from lambs", con=conn)
+        .query('active == "true"')
     )
 
-    rdata = dict(
-        xlabels=list(summary['role'].keys()),
-        data=list(summary['role'].values()),
+    gdata = (
+        pd.DataFrame(data.groupby('gender').size())
+        .rename_column(0, 'count')
+    )
+    fdata = (
+        pd.DataFrame(data.groupby('faith_status').size())
+        .rename_column(0, 'count')
+    )
+    rdata = (
+        pd.DataFrame(data.groupby('role').size())
+        .rename_column(0, 'count')
     )
 
-    pg = figure(x_range=gdata["xlabels"], plot_height=250, plot_width=250)
-    pg.vbar(x="xlabels", source=ColumnDataSource(gdata), width=0.4, top="data")
-    pg_script, pg_div = components(pg)
+    pg = hv.Bars(gdata, kdims='gender', vdims='count')
+    pf = hv.Bars(fdata, kdims='faith_status', vdims='count')
+    pr = hv.Bars(rdata, kdims='role', vdims='count')
 
-    pf = figure(x_range=fdata["xlabels"], plot_height=250, plot_width=250)
-    pf.vbar(x="xlabels", source=ColumnDataSource(fdata), width=0.4, top="data")
-    pf_script, pf_div = components(pf)
+    hvpg = renderer.get_plot(pg).state
+    hvpf = renderer.get_plot(pf).state
+    hvpr = renderer.get_plot(pr).state
 
-    pr = figure(x_range=rdata["xlabels"], plot_height=250, plot_width=250)
-    pr.vbar(x="xlabels", source=ColumnDataSource(rdata), width=0.4, top="data")
-    pr_script, pr_div = components(pr)
+    pg_script, pg_div = components(hvpg)
+    pf_script, pf_div = components(hvpf)
+    pr_script, pr_div = components(hvpr)
 
     bk = defaultdict(dict)
     bk["pg"]["script"] = pg_script
@@ -143,7 +157,7 @@ def main():
         "index.html.j2",
         all_members=all_members,
         active=active,
-        inactive=inactive
+        inactive=inactive,
     )
 
 
@@ -189,9 +203,9 @@ def update_member(id):
         member.__dict__[k] = data[k]
 
     # Do a check on the value for "active".
-    if data['active'] == 'true':
+    if data["active"] == "true":
         member.active = True
-    elif data['active'] == 'false':
+    elif data["active"] == "false":
         member.active = False
 
     # Now, commit the data.
@@ -215,7 +229,7 @@ def add_member():
     Adds a member to the database.
     """
     data = dict()
-    data['id'] = len(Lamb.query.all())
+    data["id"] = len(Lamb.query.all())
     # Grab out data from form.
     for s in MEMBER_SIGNATURE:
         data[s] = request.form[s]
@@ -310,4 +324,6 @@ def data():
     View page for the data.
     """
     bokehplots = members_summary()
-    return render_template("data.html.j2", bokehplots=bokehplots, bkversion=bkversion)
+    return render_template(
+        "data.html.j2", bokehplots=bokehplots, bkversion=bkversion
+    )
