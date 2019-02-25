@@ -16,6 +16,7 @@ dependencies:
 - sqlalchemy
 - flask-sqlalchemy
 - pyjanitor
+- nomkl  # added to save space on heroku
 - black
 - holoviews
 - bokeh
