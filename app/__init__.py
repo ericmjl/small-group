@@ -225,7 +225,7 @@ def add_member():
         data[s] = request.form[s]
 
     # Construct new member.
-    member = Lamb(**data, id=id)
+    member = Lamb(**data)
     print(member.__dict__)
 
     # Add to database.
