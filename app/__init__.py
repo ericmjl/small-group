@@ -187,7 +187,7 @@ def view_member(id):
 @app.route("/update_member/<int:id>", methods=["POST"])
 def update_member(id):
     data = request.form
-    member = Lamb.query.filter(Lamb.id == id).first()
+    member = Lamb.query.get(id)
     # Update the data based on what fields each member is supposed to have.
     for k in MEMBER_SIGNATURE:
         member.__dict__[k] = data[k]
