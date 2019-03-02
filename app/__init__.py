@@ -190,7 +190,7 @@ def update_member(id):
     member = Lamb.query.get(id)
     # Update the data based on what fields each member is supposed to have.
     for k in MEMBER_SIGNATURE:
-        member.__dict__[k] = data[k]
+        setattr(member, k, data[k])
 
     # Do a check on the value for "active".
     if data["active"] == "true":
