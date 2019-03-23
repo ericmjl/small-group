@@ -3,9 +3,12 @@ from collections import defaultdict
 from bokeh.embed import components
 from bokeh import __version__ as bkversion
 from flask import Flask, redirect, render_template, request
+from functools import partial
 
 # from member import Member
 from .smallgroup import SmallGroup
+from .database import db
+from .models import Lamb
 from dotenv import load_dotenv
 from flask_sqlalchemy import SQLAlchemy
 
@@ -14,6 +17,8 @@ import psycopg2
 import pandas as pd
 import holoviews as hv
 import janitor  # noqa: F401
+
+render_template = partial(render_template, bkversion=bkversion)
 
 renderer = hv.renderer("bokeh")
 
@@ -24,54 +29,14 @@ DB_PASS = os.getenv("DB_PASS")
 DB_USER = os.getenv("DB_USER")
 DB_HOST = os.getenv("DB_HOST")
 DB_PORT = os.getenv("DB_PORT")
-
-
 dsn = f"postgres://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = dsn  # noqa: E501
-db = SQLAlchemy(app)
+app.config["SQLALCHEMY_DATABASE_URI"] = dsn
+db.init_app(app)
 
 # We have a psycopg2 connection because the holoviews plots are best done
 # using pandas, and pandas read_sql requires a connection.
 conn = psycopg2.connect(dsn=dsn)
-
-
-class Lamb(db.Model):
-    __tablename__ = "lambs"
-    id = db.Column(db.Integer, primary_key=True)
-    given_name = db.Column(db.String(50))
-    surname = db.Column(db.String(50))
-    gender = db.Column(db.String(1))
-    faith_status = db.Column(db.String(8))
-    role = db.Column(db.String(11))
-    active = db.Column(db.Boolean)
-    notes = db.Column(db.Text(1000))
-
-    def __init__(
-        self,
-        id,
-        given_name,
-        surname,
-        gender,
-        faith_status,
-        role,
-        active,
-        notes,
-    ):
-        self.id = id
-        self.given_name = given_name
-        self.surname = surname
-        self.gender = gender
-        self.faith_status = faith_status
-        self.role = role
-        if active == "true":
-            self.active = True
-        elif active == "false":
-            self.active = False
-        else:
-            self.active = active
-        self.notes = notes
 
 
 GENDERS = ["M", "F"]
@@ -315,5 +280,5 @@ def data():
     """
     bokehplots = members_summary()
     return render_template(
-        "data.html.j2", bokehplots=bokehplots, bkversion=bkversion
+        "data.html.j2", bokehplots=bokehplots,
     )
