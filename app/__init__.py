@@ -10,7 +10,6 @@ from .smallgroup import SmallGroup
 from .database import db
 from .models import Lamb
 from dotenv import load_dotenv
-from flask_sqlalchemy import SQLAlchemy
 
 import os
 import psycopg2
@@ -65,11 +64,11 @@ def members_summary():
 
     gdata = pd.DataFrame(data.groupby("gender").size()).rename_column(
         0, "count"
-    )
+    ).reset_index()
     fdata = pd.DataFrame(data.groupby("faith_status").size()).rename_column(
         0, "count"
-    )
-    rdata = pd.DataFrame(data.groupby("role").size()).rename_column(0, "count")
+    ).reset_index()
+    rdata = pd.DataFrame(data.groupby("role").size()).rename_column(0, "count").reset_index()
 
     pg = hv.Bars(gdata, kdims="gender", vdims="count")
     pf = hv.Bars(fdata, kdims="faith_status", vdims="count")

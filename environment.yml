@@ -5,6 +5,8 @@ channels:
 dependencies:
 - flask
 - pytest
+- jupyterlab
+- ipykernel
 - python=3.6
 - ipython
 - mypy

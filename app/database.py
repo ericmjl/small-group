@@ -14,15 +14,3 @@ DB_HOST = os.getenv("DB_HOST")
 DB_PORT = os.getenv("DB_PORT")
 
 db = SQLAlchemy()
-
-engine = create_engine(
-    f"postgres://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}",
-    convert_unicode=True,
-)
-db_session = scoped_session(
-    sessionmaker(autocommit=False, autoflush=False, bind=engine)
-)
-
-
-Base = declarative_base()
-Base.query = db_session.query_property()
