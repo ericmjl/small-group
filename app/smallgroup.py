@@ -118,6 +118,12 @@ class SmallGroup(object):
         criteria = [
             self.two_members_not_in_same_group(7, 192),
             self.two_members_not_in_same_group(257, 256),
+            self.two_members_not_in_same_group(5, 66),
+            self.two_members_not_in_same_group(6, 111),
+            self.two_members_not_in_same_group(106, 111),
+            self.two_members_not_in_same_group(20, 225),
+            self.two_members_not_in_same_group(224, 228),
+            self.two_members_not_in_same_group(224, 228),
         ]
         return all(criteria)
 
