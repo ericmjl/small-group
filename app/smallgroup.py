@@ -48,10 +48,14 @@ class SmallGroup(object):
         Distributes the facilitators who are present.
         Then it distributes the other members.
 
+        Number of members per group maximum is 6.
+
         Returns nothing.
         """
         count = 0
-        num_groups = math.ceil(len(self.members) / 5)
+
+        # Number of members per group maximum is 6.
+        num_groups = math.ceil(len(self.members) / 6)
         print(num_groups)
         shuffle(self.unassigned_members)
 
