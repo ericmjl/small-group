@@ -114,9 +114,12 @@ class SmallGroup(object):
         Define all of the rejection criteria here. They are hard-coded in the
         program.
         """
-        passed1 = self.two_members_not_in_same_group(7, 192)
-
-        return all([passed1])
+        # Add to here
+        criteria = [
+            self.two_members_not_in_same_group(7, 192),
+            self.two_members_not_in_same_group(257, 256),
+        ]
+        return all(criteria)
 
     def two_members_not_in_same_group(self, mbr1: int, mbr2: int) -> bool:
         """
