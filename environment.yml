@@ -3,22 +3,28 @@ channels:
 - conda-forge
 - pkgs
 dependencies:
-- flask
-- pytest
+- flask=1.0.2
+- pytest=4.3.0
 - jupyterlab
 - ipykernel
 - python=3.6
 - ipython
 - mypy
 - flake8
-- pandas
-- python-dotenv
-- psycopg2
-- sqlalchemy
-- flask-sqlalchemy
-- pyjanitor
-- nomkl  # added to save space on heroku
-- black
-- holoviews
-- bokeh
+- pandas=0.24.1
+- python-dotenv=0.10.1
+- psycopg2=2.7.7
+- sqlalchemy=1.2.18
+- flask-sqlalchemy=2.3.2
+- pyjanitor=0.16.4
+- nomkl=3.0  # added to save space on heroku
+- black=18.9b0
+- holoviews=1.11.2
+- bokeh=1.0.4
 - gunicorn
+- hvplot
+- panel
+- param
+- pip
+- pip:
+  - streamlit
