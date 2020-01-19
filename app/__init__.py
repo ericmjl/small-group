@@ -62,13 +62,21 @@ def members_summary():
         'active == "true"'
     )
 
-    gdata = pd.DataFrame(data.groupby("gender").size()).rename_column(
-        0, "count"
-    ).reset_index()
-    fdata = pd.DataFrame(data.groupby("faith_status").size()).rename_column(
-        0, "count"
-    ).reset_index()
-    rdata = pd.DataFrame(data.groupby("role").size()).rename_column(0, "count").reset_index()
+    gdata = (
+        pd.DataFrame(data.groupby("gender").size())
+        .rename_column(0, "count")
+        .reset_index()
+    )
+    fdata = (
+        pd.DataFrame(data.groupby("faith_status").size())
+        .rename_column(0, "count")
+        .reset_index()
+    )
+    rdata = (
+        pd.DataFrame(data.groupby("role").size())
+        .rename_column(0, "count")
+        .reset_index()
+    )
 
     pg = hv.Bars(gdata, kdims="gender", vdims="count")
     pf = hv.Bars(fdata, kdims="faith_status", vdims="count")
@@ -278,6 +286,4 @@ def data():
     View page for the data.
     """
     bokehplots = members_summary()
-    return render_template(
-        "data.html.j2", bokehplots=bokehplots,
-    )
+    return render_template("data.html.j2", bokehplots=bokehplots,)

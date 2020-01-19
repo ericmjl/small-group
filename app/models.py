@@ -1,38 +1,40 @@
-from .database import db
+from sqlalchemy import create_engine
+from dotenv import load_dotenv
+import os
+from sqlalchemy.ext.declarative import declarative_base
 
 
-class Lamb(db.Model):
-    __tablename__ = "lambs"
-    id = db.Column(db.Integer, primary_key=True)
-    given_name = db.Column(db.String(50))
-    surname = db.Column(db.String(50))
-    gender = db.Column(db.String(1))
-    faith_status = db.Column(db.String(8))
-    role = db.Column(db.String(11))
-    active = db.Column(db.Boolean)
-    notes = db.Column(db.Text(1000))
+load_dotenv()
 
-    def __init__(
-        self,
-        id,
-        given_name,
-        surname,
-        gender,
-        faith_status,
-        role,
-        active,
-        notes,
-    ):
-        self.id = id
-        self.given_name = given_name
-        self.surname = surname
-        self.gender = gender
-        self.faith_status = faith_status
-        self.role = role
-        if active == "true":
-            self.active = True
-        elif active == "false":
-            self.active = False
-        else:
-            self.active = active
-        self.notes = notes
+engine = create_engine(os.getenv("DB_DSN"))
+Base = declarative_base()
+
+from sqlalchemy import Column, Integer, String, Enum
+
+import enum
+
+class FaithStatus(enum.Enum):
+    unknown = 1
+    seeker = 2
+    believer = 3
+    baptized = 4
+
+class Role(enum.Enum):
+    none = 1
+    facilitator = 2
+    counselor = 3
+
+class Active(enum.Enum):
+    false = 0
+    true = 1
+
+class Lamb(Base):
+    __tablename__ = 'lambs'
+    id = Column(Integer, primary_key=True)
+    given_name = Column(String)
+    surname = Column(String)
+    faith_status = Column(Enum(FaithStatus))
+    role = Column(Enum(Role))
+    active = Column(Enum(Active))
+    notes = Column(String)
+
