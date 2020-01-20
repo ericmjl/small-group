@@ -1,20 +1,19 @@
-import streamlit as st
-import psycopg2
-from psycopg2.extensions import parse_dsn
-import os
-import pandas as pd
-from dotenv import load_dotenv
-import janitor
-from typing import Dict
 import math
-from collections import defaultdict
+import os
+from collections import Counter, defaultdict
+from copy import copy
 from itertools import cycle
-from typing import List, Dict
-from sdi import sdi
-from collections import Counter
-from copy import deepcopy, copy
-from random import sample, choice
+from random import sample
+from typing import Iterator, Dict, List
+
+import janitor  # noqa: F401
 import matplotlib.pyplot as plt
+import pandas as pd
+import psycopg2
+import streamlit as st
+from dotenv import load_dotenv
+
+from sdi import sdi
 
 load_dotenv()
 
@@ -96,7 +95,6 @@ n_steps = st.slider(
 )
 shuffle = st.button("Shuffle lambs")
 
-
 if shuffle:
     print("Lambs < 6")
 
@@ -108,14 +106,17 @@ if shuffle:
     # - take n group members
     # - divide into n_groups, which is n_lambs / 6 rounded up.
 
-    groups = dict()
     leaders = lambs.query("role in ['facilitator', 'counselor']")
     num_groups = math.ceil(len(lambs) / 6)
 
-    groups = defaultdict(pd.DataFrame)
+    groups: Dict[int, pd.DataFrame] = defaultdict(pd.DataFrame)
     group_cycler = cycle(range(num_groups))
 
-    def assign_lambs(groups, group_cycler, lambs):
+    def assign_lambs(
+        groups: Dict[int, pd.DataFrame],
+        group_cycler: Iterator,
+        lambs: pd.DataFrame,
+    ) -> Dict[int, pd.DataFrame]:
         for r, lamb in lambs.iterrows():
             grp_num = next(group_cycler)
             groups[grp_num] = groups[grp_num].append(lamb)
@@ -130,7 +131,7 @@ if shuffle:
     # Calculate shannon diversity of groups
     # shannon diversity is computed over two columns: gender & faith status
 
-    def group_sdi(group: List[pd.Series]) -> float:
+    def group_sdi(group: pd.DataFrame) -> float:
         # Calculate SDI for one group only.
         genders = Counter(group["gender"])
         faith_statuses = Counter(group["faith_status"])
@@ -138,14 +139,14 @@ if shuffle:
         family = Counter(group["family_head"])
         return sdi(genders) + sdi(faith_statuses) + sdi(roles) + sdi(family)
 
-    def total_sdi(groups: Dict[int, List[pd.Series]]) -> float:
+    def total_sdi(groups: Dict[int, List[pd.DataFrame]]) -> float:
         # Calculate total SDI over all groups
         total_sdi = 0
         for num, group in groups.items():
             total_sdi += group_sdi(group)
         return total_sdi
 
-    def propose_swap(groups: Dict[int, List[pd.Series]]) -> Dict:
+    def propose_swap(groups: Dict[int, List[pd.DataFrame]]) -> Dict:
         # Propose a swap between two groups
         proposed = copy(groups)
         grp1, grp2 = sample(groups.keys(), 2)
@@ -158,38 +159,18 @@ if shuffle:
         proposed[grp2] = proposed[grp2].query("name != @m2name").append(m1)
         return proposed
 
-    # Now, keep proposing swaps until restrictions pass.
-    # For example, we never allow Qi Wei and Zhang Yi to be in the same group.
-    def pass_restrictions(group):
-        # express restrictions failures in the form of dataframe queries.
-        # we fail the test if the query string returns a dataframe that has elements
-        restrictions = [
-            "name == 'Zhang Yi' or name == 'Qi Wei'",
-            "name == 'Frank Lee' or name == 'Marie Lee'",
-        ]
-
-        for r in restrictions:
-            if len(group.query(r)) > 0:
-                return False
-        return True
-
-    def passing_state(groups):
-        # call pass_restrictions on all groups
-        for num, group in groups.items():
-            if not pass_restrictions(group):
-                return False
-        return True
-
     # Monte Carlo search through arrangements of people
     best_sdi = total_sdi(groups)
     pbar = st.progress(0)
     sdi_history = [best_sdi]
 
-    pbar_update = lambda i: int(i * 100 / n_steps)
+    def pbar_update(i: int, n_steps):
+        return int(i * 100 / n_steps)
+
     for i in range(n_steps):
 
         proposed = propose_swap(groups)
-        pbar.progress(pbar_update(i))
+        pbar.progress(pbar_update(i, n_steps))
         new_sdi = total_sdi(proposed)
         if new_sdi > best_sdi:
             best_sdi = new_sdi
