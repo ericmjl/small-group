@@ -13,23 +13,27 @@ from sqlalchemy import Column, Integer, String, Enum
 
 import enum
 
+
 class FaithStatus(enum.Enum):
     unknown = 1
     seeker = 2
     believer = 3
     baptized = 4
 
+
 class Role(enum.Enum):
     none = 1
     facilitator = 2
     counselor = 3
 
+
 class Active(enum.Enum):
     false = 0
     true = 1
 
+
 class Lamb(Base):
-    __tablename__ = 'lambs'
+    __tablename__ = "lambs"
     id = Column(Integer, primary_key=True)
     given_name = Column(String)
     surname = Column(String)
@@ -37,4 +41,3 @@ class Lamb(Base):
     role = Column(Enum(Role))
     active = Column(Enum(Active))
     notes = Column(String)
-

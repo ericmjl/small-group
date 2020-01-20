@@ -32,8 +32,9 @@ def db_dsn():
         user=DB_USER,
         password=DB_PASS,
         host=DB_HOST,
-        port=DB_PORT
+        port=DB_PORT,
     )
+
 
 def connection_object():
     dsn = db_dsn()
@@ -56,12 +57,19 @@ def query_families():
     families = pd.read_sql("select * from family", con=con)
     lambs = query_lambs()
     families = (
-        families
-        .merge(lambs, left_on="lamb", right_on="id", how="outer")
+        families.merge(lambs, left_on="lamb", right_on="id", how="outer")
         .fillna(0)
         .select_columns(
             [
-                "family_head", "given_name", "surname", "gender", "faith_status", "role", "active", "notes"]
+                "family_head",
+                "given_name",
+                "surname",
+                "gender",
+                "faith_status",
+                "role",
+                "active",
+                "notes",
+            ]
         )
     )
     return families
@@ -70,7 +78,9 @@ def query_families():
 df = (
     query_lambs()
     .query("active == 'true'")
-    .concatenate_columns(["given_name", "surname"], sep=" ", new_column_name="name")
+    .concatenate_columns(
+        ["given_name", "surname"], sep=" ", new_column_name="name"
+    )
 )
 
 families = query_families()
@@ -78,11 +88,14 @@ families
 df = df.merge(families)
 
 lambs = st.multiselect(
-    label="Select those who are present today.",
-    options=df["name"].values,
+    label="Select those who are present today.", options=df["name"].values
 )
 
+n_steps = st.slider(
+    "Number of steps", min_value=100, max_value=1000, value=500, step=100
+)
 shuffle = st.button("Shuffle lambs")
+
 
 if shuffle:
     print("Lambs < 6")
@@ -99,7 +112,6 @@ if shuffle:
     leaders = lambs.query("role in ['facilitator', 'counselor']")
     num_groups = math.ceil(len(lambs) / 6)
 
-
     groups = defaultdict(pd.DataFrame)
     group_cycler = cycle(range(num_groups))
 
@@ -108,7 +120,6 @@ if shuffle:
             grp_num = next(group_cycler)
             groups[grp_num] = groups[grp_num].append(lamb)
         return groups
-
 
     # Firstly, assign facilitators and counselors
     groups = assign_lambs(groups, group_cycler, leaders)
@@ -133,8 +144,6 @@ if shuffle:
         for num, group in groups.items():
             total_sdi += group_sdi(group)
         return total_sdi
-
-
 
     def propose_swap(groups: Dict[int, List[pd.Series]]) -> Dict:
         # Propose a swap between two groups
@@ -164,7 +173,6 @@ if shuffle:
                 return False
         return True
 
-
     def passing_state(groups):
         # call pass_restrictions on all groups
         for num, group in groups.items():
@@ -172,14 +180,11 @@ if shuffle:
                 return False
         return True
 
-
-
     # Monte Carlo search through arrangements of people
     best_sdi = total_sdi(groups)
     pbar = st.progress(0)
     sdi_history = [best_sdi]
 
-    n_steps = st.slider("Number of steps", min_value=100, max_value=1000, value=100, step=100)
     pbar_update = lambda i: int(i * 100 / n_steps)
     for i in range(n_steps):
 
@@ -194,8 +199,11 @@ if shuffle:
     # Now, present groups
     for g, d in groups.items():
         st.header(f"Group {g}")
-        st.dataframe(d.select_columns(["given_name", "surname", "role", "gender", "family_head"]))
-
+        st.dataframe(
+            d.select_columns(
+                ["given_name", "surname", "role", "gender", "family_head"]
+            )
+        )
 
     fig, ax = plt.subplots()
     ax.plot(sdi_history)

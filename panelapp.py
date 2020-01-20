@@ -29,6 +29,7 @@ lambs = pd.read_sql("select * from lambs", con=con).concatenate_columns(
 
 lambs_table = pn.widgets.DataFrame(lambs, height=300)
 
+
 class SmallGroupDivider(param.Parameterized):
     lambs = param.DataFrame(default=lambs)
 
@@ -38,6 +39,6 @@ class SmallGroupDivider(param.Parameterized):
         layout = pn.Column(text, table)
         return layout
 
+
 sg = SmallGroupDivider()
 pn.panel(sg.lambs_table).servable()
-

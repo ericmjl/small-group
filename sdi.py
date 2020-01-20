@@ -15,4 +15,3 @@ def sdi(data):
     N = sum(data.values())
 
     return -sum(p(n, N) for n in data.values() if n is not 0)
-

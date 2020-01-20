@@ -286,4 +286,4 @@ def data():
     View page for the data.
     """
     bokehplots = members_summary()
-    return render_template("data.html.j2", bokehplots=bokehplots,)
+    return render_template("data.html.j2", bokehplots=bokehplots)
