@@ -1,0 +1,70 @@
+<div id="member-list">
+    <table>
+        <thead>
+            <tr>
+                <th>姓名</th>
+                <th>性別</th>
+                <th>信仰狀態</th>
+                <th>角色</th>
+                <th>學業狀態</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for member in members %}
+            <tr id="member-row-{{ member.id }}">
+                <td>{{ member.surname }}{{ member.given_name }}</td>
+                <td>{{ "男" if member.gender == "M" else "女" }}</td>
+                <td>
+                    {% if member.faith_status == "baptized" %}
+                        已受洗
+                    {% elif member.faith_status == "believer" %}
+                        信徒
+                    {% elif member.faith_status == "seeker" %}
+                        慕道友
+                    {% else %}
+                        未知
+                    {% endif %}
+                </td>
+                <td>
+                    {% if member.role == "counselor" %}
+                        輔導
+                    {% elif member.role == "facilitator" %}
+                        帶領者
+                    {% else %}
+                        無
+                    {% endif %}
+                </td>
+                <td>
+                    {% if member.education_status == "undergraduate" %}
+                        大學生
+                    {% elif member.education_status == "graduate" %}
+                        研究生
+                    {% else %}
+                        已畢業
+                    {% endif %}
+                </td>
+                <td>
+                    <button
+                        hx-post="/members/{{ member.id }}/toggle-active"
+                        hx-target="#member-list"
+                        hx-swap="outerHTML">
+                        啟用
+                    </button>
+                    <button
+                        hx-delete="/members/{{ member.id }}"
+                        hx-target="#member-list"
+                        hx-swap="outerHTML"
+                        hx-confirm="確定要永久刪除這位組員嗎？此操作無法撤銷。">
+                        刪除
+                    </button>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" style="text-align: center;">目前沒有非活躍組員</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

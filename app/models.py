@@ -19,6 +19,9 @@ class Member(Base):
     gender: Mapped[str] = mapped_column(String(1))
     faith_status: Mapped[str] = mapped_column(String(20))
     role: Mapped[str] = mapped_column(String(20))
+    education_status: Mapped[str] = mapped_column(
+        String(20), default="undergraduate"
+    )  # undergraduate, graduate, graduated
     active: Mapped[bool] = mapped_column(Boolean, default=True)
     notes: Mapped[Optional[str]] = mapped_column(Text)
 
