@@ -1,0 +1,137 @@
+<div id="member-list">
+    <table>
+        <thead>
+            <tr>
+                <th>出席</th>
+                <th>姓名</th>
+                <th>性別</th>
+                <th>信仰狀態</th>
+                <th>角色</th>
+                <th>狀態</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for member in members %}
+            <tr id="member-row-{{ member.id }}">
+                <td>
+                    <input
+                        type="checkbox"
+                        {% if attendance and attendance.get(member.id, {}).get('present') %}checked{% endif %}
+                        hx-post="/attendance/record"
+                        hx-trigger="change"
+                        hx-vals='{"member_id": "{{ member.id }}", "attendance_date": "{{ today.strftime('%Y-%m-%d') }}", "present": "true"}'
+                        hx-swap="none"
+                    >
+                </td>
+                <td>
+                    <span class="display-mode">
+                        {{ member.surname }}{{ member.given_name }}
+                    </span>
+                    <span class="edit-mode" style="display: none;">
+                        <input type="text" name="surname" value="{{ member.surname }}" size="4" placeholder="姓氏">
+                        <input type="text" name="given_name" value="{{ member.given_name }}" size="4" placeholder="名字">
+                    </span>
+                </td>
+                <td>
+                    <span class="display-mode">
+                        {{ "男" if member.gender == "M" else "女" }}
+                    </span>
+                    <span class="edit-mode" style="display: none;">
+                        <select name="gender">
+                            <option value="M" {% if member.gender == "M" %}selected{% endif %}>男</option>
+                            <option value="F" {% if member.gender == "F" %}selected{% endif %}>女</option>
+                        </select>
+                    </span>
+                </td>
+                <td>
+                    <span class="display-mode">
+                        {% if member.faith_status == "baptized" %}
+                            已受洗
+                        {% elif member.faith_status == "believer" %}
+                            信徒
+                        {% elif member.faith_status == "seeker" %}
+                            慕道友
+                        {% else %}
+                            未知
+                        {% endif %}
+                    </span>
+                    <span class="edit-mode" style="display: none;">
+                        <select name="faith_status">
+                            <option value="baptized" {% if member.faith_status == "baptized" %}selected{% endif %}>已受洗</option>
+                            <option value="believer" {% if member.faith_status == "believer" %}selected{% endif %}>信徒</option>
+                            <option value="seeker" {% if member.faith_status == "seeker" %}selected{% endif %}>慕道友</option>
+                            <option value="unknown" {% if member.faith_status == "unknown" %}selected{% endif %}>未知</option>
+                        </select>
+                    </span>
+                </td>
+                <td>
+                    <span class="display-mode">
+                        {% if member.role == "counselor" %}
+                            輔導
+                        {% elif member.role == "facilitator" %}
+                            帶領者
+                        {% else %}
+                            無
+                        {% endif %}
+                    </span>
+                    <span class="edit-mode" style="display: none;">
+                        <select name="role">
+                            <option value="counselor" {% if member.role == "counselor" %}selected{% endif %}>輔導</option>
+                            <option value="facilitator" {% if member.role == "facilitator" %}selected{% endif %}>帶領者</option>
+                            <option value="none" {% if member.role == "none" %}selected{% endif %}>無</option>
+                        </select>
+                    </span>
+                </td>
+                <td>{{ "活躍" if member.active else "非活躍" }}</td>
+                <td>
+                    <div class="display-mode">
+                        <button
+                            onclick="toggleEditMode({{ member.id }})"
+                            class="edit-button">
+                            編輯
+                        </button>
+                        <button
+                            hx-post="/members/{{ member.id }}/toggle-active"
+                            hx-target="#member-list"
+                            hx-swap="outerHTML">
+                            {{ "停用" if member.active else "啟用" }}
+                        </button>
+                    </div>
+                    <div class="edit-mode" style="display: none;">
+                        <button
+                            hx-put="/members/{{ member.id }}/update"
+                            hx-include="closest tr"
+                            hx-target="#member-list"
+                            hx-swap="outerHTML"
+                            type="button">
+                            保存
+                        </button>
+                        <button
+                            onclick="toggleEditMode({{ member.id }})"
+                            type="button">
+                            取消
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+function toggleEditMode(memberId) {
+    const row = document.getElementById(`member-row-${memberId}`);
+    const displayModes = row.querySelectorAll('.display-mode');
+    const editModes = row.querySelectorAll('.edit-mode');
+
+    displayModes.forEach(el => {
+        el.style.display = el.style.display === 'none' ? '' : 'none';
+    });
+
+    editModes.forEach(el => {
+        el.style.display = el.style.display === 'none' ? '' : 'none';
+    });
+}
+</script>

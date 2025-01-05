@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小組管理系統</title>
+    <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <style>
+        /* Custom styles */
+        .attendance-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        .member-card {
+            padding: 1rem;
+            border: 1px solid var(--border);
+            border-radius: var(--border-radius);
+        }
+        .attendance-toggle {
+            cursor: pointer;
+        }
+        .present {
+            background-color: var(--accent);
+            color: var(--bg);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>小組管理系統</h1>
+        <nav>
+            <a href="/">首頁</a>
+        </nav>
+    </header>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <p>使用 FastAPI、HTMX 和 SimpleCSS 開發</p>
+    </footer>
+</body>
+</html>

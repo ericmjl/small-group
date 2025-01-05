@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section>
+    <h2>組員列表</h2>
+
+    <!-- Add Member Form -->
+    <details>
+        <summary>新增組員</summary>
+        <form hx-post="/members/add" hx-target="#member-list" hx-swap="outerHTML">
+            <div>
+                <label for="given_name">名字：</label>
+                <input type="text" id="given_name" name="given_name" required>
+            </div>
+            <div>
+                <label for="surname">姓氏：</label>
+                <input type="text" id="surname" name="surname" required>
+            </div>
+            <div>
+                <label for="gender">性別：</label>
+                <select id="gender" name="gender" required>
+                    <option value="M">男</option>
+                    <option value="F">女</option>
+                </select>
+            </div>
+            <div>
+                <label for="faith_status">信仰狀態：</label>
+                <select id="faith_status" name="faith_status" required>
+                    <option value="baptized">已受洗</option>
+                    <option value="believer">信徒</option>
+                    <option value="seeker">慕道友</option>
+                    <option value="unknown">未知</option>
+                </select>
+            </div>
+            <div>
+                <label for="role">角色：</label>
+                <select id="role" name="role" required>
+                    <option value="counselor">輔導</option>
+                    <option value="facilitator">帶領者</option>
+                    <option value="none">無</option>
+                </select>
+            </div>
+            <div>
+                <label for="notes">備註：</label>
+                <textarea id="notes" name="notes"></textarea>
+            </div>
+            <button type="submit">新增組員</button>
+        </form>
+    </details>
+
+    <!-- Member List with Attendance -->
+    <h3>{{ today.strftime('%Y-%m-%d') }} 出席記錄</h3>
+    {% include "partials/member_list.html" %}
+</section>
+{% endblock %}

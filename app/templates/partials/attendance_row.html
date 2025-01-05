@@ -1,0 +1,38 @@
+<div class="member-card" id="attendance-{{ member.id }}">
+    <h3>{{ member.surname }}{{ member.given_name }}</h3>
+    <form hx-post="/attendance/record"
+          hx-target="#attendance-{{ member.id }}"
+          hx-swap="outerHTML">
+        <input type="hidden" name="member_id" value="{{ member.id }}">
+        <input type="hidden" name="attendance_date" value="{{ today.strftime('%Y-%m-%d') }}">
+
+        <div class="attendance-toggle {% if attendance and attendance.present %}present{% endif %}"
+             onclick="this.querySelector('input[type=radio]').click()">
+            <input type="radio"
+                   name="present"
+                   value="true"
+                   {% if attendance and attendance.present %}checked{% endif %}
+                   style="display: none;">
+            出席
+        </div>
+
+        <div class="attendance-toggle {% if attendance and not attendance.present %}present{% endif %}"
+             onclick="this.querySelector('input[type=radio]').click()">
+            <input type="radio"
+                   name="present"
+                   value="false"
+                   {% if not attendance or not attendance.present %}checked{% endif %}
+                   style="display: none;">
+            缺席
+        </div>
+
+        <div>
+            <label for="notes-{{ member.id }}">備註：</label>
+            <textarea id="notes-{{ member.id }}"
+                      name="notes"
+                      rows="2">{{ attendance.notes if attendance else "" }}</textarea>
+        </div>
+
+        <button type="submit">保存</button>
+    </form>
+</div>

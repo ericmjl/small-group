@@ -3,7 +3,7 @@ members.json
 members.csv
 .mypy_cache/*
 .vscode/*
-
+*.db
 # Created by https://www.gitignore.io/api/python
 # Edit at https://www.gitignore.io/?templates=python
 
@@ -129,3 +129,7 @@ dmypy.json
 .venv/
 
 # End of https://www.gitignore.io/api/python
+
+# pixi environments
+.pixi
+*.egg-info

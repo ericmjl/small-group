@@ -1,38 +1,43 @@
-from .database import db
+from datetime import date
+from typing import Optional
+from sqlalchemy import Boolean, Column, Date, ForeignKey, Integer, String, Text
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
-class Lamb(db.Model):
-    __tablename__ = "lambs"
-    id = db.Column(db.Integer, primary_key=True)
-    given_name = db.Column(db.String(50))
-    surname = db.Column(db.String(50))
-    gender = db.Column(db.String(1))
-    faith_status = db.Column(db.String(8))
-    role = db.Column(db.String(11))
-    active = db.Column(db.Boolean)
-    notes = db.Column(db.Text(1000))
+class Base(DeclarativeBase):
+    pass
 
-    def __init__(
-        self,
-        id,
-        given_name,
-        surname,
-        gender,
-        faith_status,
-        role,
-        active,
-        notes,
-    ):
-        self.id = id
-        self.given_name = given_name
-        self.surname = surname
-        self.gender = gender
-        self.faith_status = faith_status
-        self.role = role
-        if active == "true":
-            self.active = True
-        elif active == "false":
-            self.active = False
-        else:
-            self.active = active
-        self.notes = notes
+
+class Member(Base):
+    """A member of the small group."""
+
+    __tablename__ = "members"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    given_name: Mapped[str] = mapped_column(String(50))
+    surname: Mapped[str] = mapped_column(String(50))
+    gender: Mapped[str] = mapped_column(String(1))
+    faith_status: Mapped[str] = mapped_column(String(20))
+    role: Mapped[str] = mapped_column(String(20))
+    active: Mapped[bool] = mapped_column(Boolean, default=True)
+    notes: Mapped[Optional[str]] = mapped_column(Text)
+
+    # Relationship to attendance records
+    attendance_records: Mapped[list["Attendance"]] = relationship(
+        back_populates="member"
+    )
+
+
+class Attendance(Base):
+    """Record of attendance for a member on a specific date."""
+
+    __tablename__ = "attendance"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    member_id: Mapped[int] = mapped_column(ForeignKey("members.id"))
+    date: Mapped[date] = mapped_column(Date)
+    present: Mapped[bool] = mapped_column(Boolean, default=False)
+    notes: Mapped[Optional[str]] = mapped_column(Text)
+
+    # Relationship to member
+    member: Mapped[Member] = relationship(back_populates="attendance_records")

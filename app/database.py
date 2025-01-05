@@ -1,16 +1,22 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import scoped_session, sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
-from dotenv import load_dotenv
-from flask_sqlalchemy import SQLAlchemy
-import os
+from sqlalchemy.orm import sessionmaker
+from pathlib import Path
 
-load_dotenv()
+# Create the database URL
+SQLITE_DB_PATH = Path("app.db")
+DATABASE_URL = f"sqlite:///{SQLITE_DB_PATH}"
 
-DB_NAME = os.getenv("DB_NAME")
-DB_PASS = os.getenv("DB_PASS")
-DB_USER = os.getenv("DB_USER")
-DB_HOST = os.getenv("DB_HOST")
-DB_PORT = os.getenv("DB_PORT")
+# Create the SQLAlchemy engine
+engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 
-db = SQLAlchemy()
+# Create SessionLocal class
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+
+def get_db():
+    """Dependency to get a database session."""
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
