@@ -115,8 +115,12 @@ def divide_into_groups(
     ]
 
     # Further separate regular members by graduation status
-    graduated_regular = [m for m in regular_members if m.is_graduated]
-    non_graduated_regular = [m for m in regular_members if not m.is_graduated]
+    graduated_regular = [
+        m for m in regular_members if m.education_status == "graduated"
+    ]
+    non_graduated_regular = [
+        m for m in regular_members if m.education_status != "graduated"
+    ]
 
     # Number of groups cannot exceed number of leaders
     num_groups = min(num_groups, len(leaders))
@@ -151,46 +155,46 @@ def divide_into_groups(
         # Create a new distribution starting with the leader distribution
         current_groups = [Group(members=group.members[:]) for group in groups]
 
-        # Try to keep graduated members together as much as possible
-        # while maintaining group size constraints where possible
-        all_regular = graduated_regular + non_graduated_regular
-        random.shuffle(all_regular)
-
-        # Calculate target sizes that would allow graduated members to stay together
-        grad_preferred_groups = []
+        # Handle graduated members first if there are enough of them
         if len(graduated_regular) >= 4:
-            # If we have enough graduated members, try to keep them together
+            # Select a random group for graduated members
             grad_group_idx = random.randrange(num_groups)
-            grad_preferred_groups = [grad_group_idx]
+            grad_group = current_groups[grad_group_idx]
+
+            # Add all graduated members to this group
+            for member in graduated_regular:
+                grad_group.members.append(member)
+
+        # Now distribute non-graduated members among the remaining groups
+        random.shuffle(non_graduated_regular)
 
         # Calculate minimum members per group to ensure all members are distributed
-        min_members_per_group = (total_present + num_groups - 1) // num_groups
+        remaining_members = (
+            non_graduated_regular
+            if len(graduated_regular) >= 4
+            else graduated_regular + non_graduated_regular
+        )
+        min_members_per_group = (len(remaining_members) + num_groups - 1) // num_groups
 
-        # Distribute regular members
-        for member in all_regular:
-            eligible_groups = []
+        # Distribute remaining members
+        for member in remaining_members:
+            if len(graduated_regular) >= 4 and member in graduated_regular:
+                continue  # Skip graduated members as they've already been placed
 
-            if member.is_graduated and grad_preferred_groups:
-                # Graduated members prefer grad groups if they exist
-                eligible_groups = [
-                    g
-                    for i, g in enumerate(current_groups)
-                    if i in grad_preferred_groups
-                ]
+            # Find the group with the fewest members that isn't the graduated group
+            eligible_groups = [
+                g
+                for i, g in enumerate(current_groups)
+                if (len(graduated_regular) < 4 or i != grad_group_idx)
+            ]
 
-            # If no eligible grad groups or not a graduated member
-            if not eligible_groups:
-                # Prioritize groups that haven't reached minimum size
-                eligible_groups = [
-                    g for g in current_groups if len(g.members) < min_members_per_group
-                ]
+            # Prioritize groups that haven't reached minimum size
+            under_min_groups = [
+                g for g in eligible_groups if len(g.members) < min_members_per_group
+            ]
+            target_groups = under_min_groups if under_min_groups else eligible_groups
 
-                # If all groups have reached minimum, distribute evenly
-                if not eligible_groups:
-                    eligible_groups = current_groups
-
-            # Among eligible groups, prefer those with fewer members
-            target_group = min(eligible_groups, key=lambda g: len(g.members))
+            target_group = min(target_groups, key=lambda g: len(g.members))
             target_group.members.append(member)
 
         # Verify distribution is valid
