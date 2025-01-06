@@ -4,12 +4,31 @@ from datetime import date, timedelta
 import random
 from pathlib import Path
 import sys
+from dataclasses import dataclass
+from typing import List, Dict, Optional
+from enum import Enum
 
 # Add the parent directory to the path so we can import the app
 sys.path.append(str(Path(__file__).parent.parent))
 
 from app.database import get_db
 from app.models import Member, Attendance
+
+
+class Profile(str, Enum):
+    DEFAULT = "default"
+    TYPICAL = "typical"
+    IMBALANCED = "imbalanced"
+
+
+@dataclass
+class MemberProfile:
+    role: str
+    education_status: str
+    count: int
+    faith_status_weights: Optional[List[float]] = None
+    gender_weights: Optional[List[float]] = None
+
 
 # Mock data
 GIVEN_NAMES = [
@@ -47,48 +66,188 @@ GIVEN_NAMES = [
 
 SURNAMES = ["陳", "林", "張", "李", "王", "吳", "劉", "蔡", "楊", "黃"]
 
-ROLES = ["counselor", "facilitator", "none"]
-ROLE_WEIGHTS = [0.2, 0.2, 0.6]  # 20% counselors, 20% facilitators, 60% none
-
 FAITH_STATUSES = ["baptized", "believer", "seeker", "unknown"]
-FAITH_WEIGHTS = [0.3, 0.3, 0.3, 0.1]  # 30% each except unknown
 
-EDUCATION_STATUSES = ["undergraduate", "graduate", "graduated"]
-EDUCATION_WEIGHTS = [0.5, 0.3, 0.2]  # 50% undergrad, 30% grad, 20% graduated
+# Profile definitions
+PROFILES = {
+    Profile.DEFAULT: [
+        MemberProfile(
+            role="counselor",
+            education_status="any",
+            count=int(30 * 0.2),  # 20% counselors
+            faith_status_weights=[0.3, 0.3, 0.3, 0.1],
+        ),
+        MemberProfile(
+            role="facilitator",
+            education_status="any",
+            count=int(30 * 0.2),  # 20% facilitators
+            faith_status_weights=[0.3, 0.3, 0.3, 0.1],
+        ),
+        MemberProfile(
+            role="none",
+            education_status="any",
+            count=int(30 * 0.6),  # 60% regular members
+            faith_status_weights=[0.3, 0.3, 0.3, 0.1],
+        ),
+    ],
+    Profile.TYPICAL: [
+        # Counselors - all graduated
+        MemberProfile(
+            role="counselor",
+            education_status="graduated",
+            count=3,
+            faith_status_weights=[0.5, 0.5, 0.0, 0.0],  # Only baptized or believer
+            gender_weights=[0.5, 0.5],  # Equal gender distribution
+        ),
+        # Facilitators - all undergrads
+        MemberProfile(
+            role="facilitator",
+            education_status="undergraduate",
+            count=5,
+            faith_status_weights=[0.4, 0.4, 0.2, 0.0],  # Mostly baptized or believer
+            gender_weights=[0.5, 0.5],  # Equal gender distribution
+        ),
+        # Regular undergrad members
+        MemberProfile(
+            role="none",
+            education_status="undergraduate",
+            count=8,  # Half of regular members are undergrads
+            faith_status_weights=[0.2, 0.3, 0.4, 0.1],  # More seekers
+            gender_weights=[0.5, 0.5],  # Equal gender distribution
+        ),
+        # Regular graduate student members
+        MemberProfile(
+            role="none",
+            education_status="graduate",
+            count=5,  # About a third are grad students
+            faith_status_weights=[0.3, 0.3, 0.3, 0.1],  # Equal distribution
+            gender_weights=[0.5, 0.5],
+        ),
+        # Regular graduated members
+        MemberProfile(
+            role="none",
+            education_status="graduated",
+            count=3,  # A few graduated members
+            faith_status_weights=[0.4, 0.4, 0.2, 0.0],  # More mature in faith
+            gender_weights=[0.5, 0.5],
+        ),
+    ],
+    Profile.IMBALANCED: [
+        # Single counselor (graduated)
+        MemberProfile(
+            role="counselor",
+            education_status="graduated",
+            count=1,
+            faith_status_weights=[0.5, 0.5, 0.0, 0.0],  # Only baptized or believer
+            gender_weights=[0.5, 0.5],
+        ),
+        # Two facilitators (mix of education status)
+        MemberProfile(
+            role="facilitator",
+            education_status="undergraduate",
+            count=1,
+            faith_status_weights=[0.4, 0.4, 0.2, 0.0],  # Mostly baptized or believer
+            gender_weights=[0.5, 0.5],
+        ),
+        MemberProfile(
+            role="facilitator",
+            education_status="graduate",
+            count=1,
+            faith_status_weights=[0.4, 0.4, 0.2, 0.0],
+            gender_weights=[0.5, 0.5],
+        ),
+        # Regular members - diverse mix of education statuses
+        MemberProfile(
+            role="none",
+            education_status="undergraduate",
+            count=8,  # 40% undergrads
+            faith_status_weights=[0.2, 0.3, 0.4, 0.1],  # More seekers
+            gender_weights=[0.5, 0.5],
+        ),
+        MemberProfile(
+            role="none",
+            education_status="graduate",
+            count=7,  # 35% grad students
+            faith_status_weights=[0.3, 0.3, 0.3, 0.1],
+            gender_weights=[0.5, 0.5],
+        ),
+        MemberProfile(
+            role="none",
+            education_status="graduated",
+            count=5,  # 25% graduated
+            faith_status_weights=[0.4, 0.4, 0.2, 0.0],  # More mature in faith
+            gender_weights=[0.5, 0.5],
+        ),
+    ],
+}
 
 
-def create_mock_members(num_members=30):
-    """Create mock members with realistic Chinese names and varied statuses."""
+def create_mock_members(profile: Profile = Profile.DEFAULT):
+    """Create mock members based on the specified profile."""
     db = next(get_db())
     created_members = []
+    profile_config = PROFILES[profile]
 
     try:
-        # Create members
-        for i in range(num_members):
-            member = Member(
-                given_name=GIVEN_NAMES[i],  # Use unique names
-                surname=random.choice(SURNAMES),
-                gender=random.choice(["M", "F"]),
-                faith_status=random.choices(FAITH_STATUSES, weights=FAITH_WEIGHTS)[0],
-                role=random.choices(ROLES, weights=ROLE_WEIGHTS)[0],
-                education_status=random.choices(
-                    EDUCATION_STATUSES, weights=EDUCATION_WEIGHTS
-                )[0],
-                active=True,  # Make all members active by default
-                notes="這是測試資料",
-            )
-            db.add(member)
-            created_members.append(member)
+        # Create members according to profile
+        used_names = set()
+
+        for member_profile in profile_config:
+            for _ in range(member_profile.count):
+                # Select a unique name
+                while True:
+                    given_name = random.choice(GIVEN_NAMES)
+                    surname = random.choice(SURNAMES)
+                    full_name = f"{surname}{given_name}"
+                    if full_name not in used_names:
+                        used_names.add(full_name)
+                        break
+
+                # Determine gender based on weights or default to random
+                gender_weights = member_profile.gender_weights or [0.5, 0.5]
+                gender = random.choices(["M", "F"], weights=gender_weights)[0]
+
+                # Determine faith status based on weights or default
+                faith_weights = member_profile.faith_status_weights or [
+                    0.25,
+                    0.25,
+                    0.25,
+                    0.25,
+                ]
+                faith_status = random.choices(FAITH_STATUSES, weights=faith_weights)[0]
+
+                # Determine education status
+                education_status = (
+                    member_profile.education_status
+                    if member_profile.education_status != "any"
+                    else random.choices(
+                        ["undergraduate", "graduate", "graduated"],
+                        weights=[0.5, 0.3, 0.2],
+                    )[0]
+                )
+
+                member = Member(
+                    given_name=given_name,
+                    surname=surname,
+                    gender=gender,
+                    faith_status=faith_status,
+                    role=member_profile.role,
+                    education_status=education_status,
+                    active=True,
+                    notes="這是測試資料",
+                )
+                db.add(member)
+                created_members.append(member)
 
         db.commit()
 
         # Print debug information
-        print(f"\nCreated {len(created_members)} members:")
+        print(f"\nCreated {len(created_members)} members using {profile} profile:")
         for i, member in enumerate(created_members, 1):
             print(
                 f"{i}. {member.surname}{member.given_name} "
                 f"({member.gender}, {member.role}, {member.education_status}, "
-                f"active={member.active})"
+                f"{member.faith_status}, active={member.active})"
             )
 
         # Create today's attendance records for all members
@@ -97,7 +256,7 @@ def create_mock_members(num_members=30):
             attendance = Attendance(
                 member_id=member.id,
                 date=today,
-                present=True,  # Make all members present by default
+                present=True,
                 notes="準時參加",
             )
             db.add(attendance)
@@ -114,6 +273,19 @@ def create_mock_members(num_members=30):
 
 
 if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Populate database with mock data")
+    parser.add_argument(
+        "--profile",
+        type=Profile,
+        choices=list(Profile),
+        default=Profile.DEFAULT,
+        help="Profile to use for member generation",
+    )
+
+    args = parser.parse_args()
+
     # Delete existing data first
     db = next(get_db())
     try:
@@ -130,5 +302,5 @@ if __name__ == "__main__":
         db.close()
 
     # Create new members
-    print("\nCreating new members...")
-    create_mock_members()
+    print(f"\nCreating new members using {args.profile} profile...")
+    create_mock_members(args.profile)
