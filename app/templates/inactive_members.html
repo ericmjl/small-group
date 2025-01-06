@@ -1,8 +1,12 @@
 {% extends "base.html" %}
 
 {% block content %}
-<section>
-    <h2>非活躍組員列表</h2>
-    {% include "partials/inactive_member_list.html" %}
-</section>
+<div class="container mt-4">
+    <div class="row">
+        <div class="col">
+            <h2>非活躍組員列表</h2>
+            {% include "partials/inactive_member_list.html" %}
+        </div>
+    </div>
+</div>
 {% endblock %}
