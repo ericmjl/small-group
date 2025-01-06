@@ -19,6 +19,7 @@ class Profile(str, Enum):
     DEFAULT = "default"
     TYPICAL = "typical"
     IMBALANCED = "imbalanced"
+    GRAD_HEAVY = "grad_heavy"
 
 
 @dataclass
@@ -176,6 +177,62 @@ PROFILES = {
             education_status="graduated",
             count=5,  # 25% graduated
             faith_status_weights=[0.4, 0.4, 0.2, 0.0],  # More mature in faith
+            gender_weights=[0.5, 0.5],
+        ),
+    ],
+    Profile.GRAD_HEAVY: [
+        # Counselors - mix of graduated and current
+        MemberProfile(
+            role="counselor",
+            education_status="graduated",
+            count=2,
+            faith_status_weights=[0.5, 0.5, 0.0, 0.0],  # Only baptized or believer
+            gender_weights=[0.5, 0.5],
+        ),
+        MemberProfile(
+            role="counselor",
+            education_status="graduate",
+            count=1,
+            faith_status_weights=[0.5, 0.5, 0.0, 0.0],
+            gender_weights=[0.5, 0.5],
+        ),
+        # Facilitators - mix of education statuses
+        MemberProfile(
+            role="facilitator",
+            education_status="undergraduate",
+            count=2,
+            faith_status_weights=[0.4, 0.4, 0.2, 0.0],  # Mostly baptized or believer
+            gender_weights=[0.5, 0.5],
+        ),
+        MemberProfile(
+            role="facilitator",
+            education_status="graduate",
+            count=2,
+            faith_status_weights=[0.4, 0.4, 0.2, 0.0],
+            gender_weights=[0.5, 0.5],
+        ),
+        # Regular graduated members (larger group)
+        MemberProfile(
+            role="none",
+            education_status="graduated",
+            count=6,  # Significant graduated presence
+            faith_status_weights=[0.4, 0.4, 0.2, 0.0],  # More mature in faith
+            gender_weights=[0.5, 0.5],
+        ),
+        # Regular graduate students
+        MemberProfile(
+            role="none",
+            education_status="graduate",
+            count=4,
+            faith_status_weights=[0.3, 0.3, 0.3, 0.1],  # Equal distribution
+            gender_weights=[0.5, 0.5],
+        ),
+        # Regular undergrad members
+        MemberProfile(
+            role="none",
+            education_status="undergraduate",
+            count=7,
+            faith_status_weights=[0.2, 0.3, 0.4, 0.1],  # More seekers
             gender_weights=[0.5, 0.5],
         ),
     ],

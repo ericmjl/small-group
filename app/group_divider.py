@@ -77,12 +77,15 @@ def divide_into_groups(
 ) -> List[Group]:
     """
     Divide members into groups optimizing for diversity and constraints.
-    Handles graduated and non-graduated members separately.
+    Leaders (counselors and facilitators) are distributed evenly across all groups
+    regardless of their graduation status. Regular members are then distributed
+    with graduated members preferring to be together.
 
     Each group must have:
     - At least one leader (facilitator or counselor)
-    - Between 4-7 members total
-    - Leaders evenly distributed among non-graduated groups
+    - Minimum of 4 members
+    - Maximum of 7 members per group (can be exceeded only if necessary to ensure leader coverage)
+    - Leaders evenly distributed among all groups
 
     :param members: List of members to divide
     :param num_groups: Number of groups to create (will be adjusted based on constraints)
@@ -93,114 +96,112 @@ def divide_into_groups(
     present_members = [m for m in members if m.is_present]
     total_present = len(present_members)
 
-    # Separate graduated and non-graduated members
-    graduated = [m for m in present_members if m.is_graduated]
-    non_graduated = [m for m in present_members if not m.is_graduated]
-
-    # Calculate number of groups needed for each category
-    grad_groups = (len(graduated) + 6) // 7  # Ceiling division for graduated members
-    if grad_groups > 0 and len(graduated) < 4:
-        grad_groups = 0  # Don't create a separate grad group if less than 4 members
-        # Add graduated members to non_graduated for distribution
-        non_graduated.extend(graduated)
-        graduated = []
-
-    nongrad_min_groups = (len(non_graduated) + 6) // 7  # Ceiling division
-    nongrad_max_groups = len(non_graduated) // 4  # Floor division
-    nongrad_groups = max(
-        nongrad_min_groups, min(num_groups - grad_groups, nongrad_max_groups)
-    )
-
-    if nongrad_groups < 1:
-        raise ValueError(
-            f"Cannot create groups with {len(non_graduated)} non-graduated members. "
-            "Need at least 4 members total."
-        )
-
-    # Get all leaders from non-graduated members and shuffle them
+    # First, separate leaders from regular members
     leaders = [
         m
-        for m in non_graduated
+        for m in present_members
         if m.role in (MemberRole.FACILITATOR, MemberRole.COUNSELOR)
     ]
+    regular_members = [
+        m
+        for m in present_members
+        if m.role not in (MemberRole.FACILITATOR, MemberRole.COUNSELOR)
+    ]
+
+    # Further separate regular members by graduation status
+    graduated_regular = [m for m in regular_members if m.is_graduated]
+    non_graduated_regular = [m for m in regular_members if not m.is_graduated]
+
+    # Number of groups cannot exceed number of leaders
+    num_groups = min(num_groups, len(leaders))
+
+    if num_groups < 1:
+        raise ValueError("Cannot create groups: no leaders are present")
+
+    # Calculate minimum number of groups needed based on total members
+    min_groups_by_size = (total_present + 6) // 7  # Initial estimate
+
+    # If we have fewer leaders than minimum groups needed, we'll have to exceed
+    # the maximum group size to ensure leader coverage
+    if num_groups < min_groups_by_size:
+        print(
+            f"Warning: Only {num_groups} leaders available for {total_present} members. "
+            "Some groups will exceed the recommended maximum size to ensure leader coverage."
+        )
+
+    # Initialize groups with one leader each
+    groups = [Group(members=[]) for _ in range(num_groups)]
+
+    # First, distribute leaders evenly among all groups
     random.shuffle(leaders)
-
-    if not leaders and nongrad_groups > 0:
-        raise ValueError("Cannot create non-graduated groups: no leaders are present")
-
-    # Adjust number of non-graduated groups based on available leaders if necessary
-    nongrad_groups = min(nongrad_groups, len(leaders))
-
-    # Initialize groups
-    groups = []
-
-    # Create graduated groups if needed
-    if grad_groups > 0:
-        grad_group = Group(members=graduated)
-        groups.append(grad_group)
-
-    # Create and initialize non-graduated groups
-    nongrad_group_list = [Group(members=[]) for _ in range(nongrad_groups)]
-
-    # Distribute leaders among non-graduated groups
     for i, leader in enumerate(leaders):
-        nongrad_group_list[i % nongrad_groups].members.append(leader)
+        groups[i % num_groups].members.append(leader)
 
-    # Get remaining regular members
-    regular_members = [m for m in non_graduated if m.role == MemberRole.REGULAR]
-
-    # Optimization loop for non-graduated groups
-    best_nongrad_groups = None
+    # Optimization loop
+    best_groups = None
     best_diversity = float("-inf")
 
     for _ in range(max_iterations):
-        # Create a new distribution
-        current_groups = [
-            Group(members=group.members[:]) for group in nongrad_group_list
-        ]
+        # Create a new distribution starting with the leader distribution
+        current_groups = [Group(members=group.members[:]) for group in groups]
 
-        # Randomly distribute regular members
-        remaining = regular_members.copy()
-        random.shuffle(remaining)
+        # Try to keep graduated members together as much as possible
+        # while maintaining group size constraints where possible
+        all_regular = graduated_regular + non_graduated_regular
+        random.shuffle(all_regular)
 
-        # Try to distribute members evenly first
-        target_size = (len(non_graduated) + nongrad_groups - 1) // nongrad_groups
+        # Calculate target sizes that would allow graduated members to stay together
+        grad_preferred_groups = []
+        if len(graduated_regular) >= 4:
+            # If we have enough graduated members, try to keep them together
+            grad_group_idx = random.randrange(num_groups)
+            grad_preferred_groups = [grad_group_idx]
 
-        for member in remaining:
-            # Find groups that need more members to reach target size
-            eligible_groups = [
-                g for g in current_groups if len(g.members) < min(target_size, 7)
-            ]
+        # Calculate minimum members per group to ensure all members are distributed
+        min_members_per_group = (total_present + num_groups - 1) // num_groups
 
+        # Distribute regular members
+        for member in all_regular:
+            eligible_groups = []
+
+            if member.is_graduated and grad_preferred_groups:
+                # Graduated members prefer grad groups if they exist
+                eligible_groups = [
+                    g
+                    for i, g in enumerate(current_groups)
+                    if i in grad_preferred_groups
+                ]
+
+            # If no eligible grad groups or not a graduated member
             if not eligible_groups:
-                # If all groups reached target size, allow up to 7 members
-                eligible_groups = [g for g in current_groups if len(g.members) < 7]
-                if not eligible_groups:
-                    break
+                # Prioritize groups that haven't reached minimum size
+                eligible_groups = [
+                    g for g in current_groups if len(g.members) < min_members_per_group
+                ]
 
-            # Among eligible groups, pick the smallest one
+                # If all groups have reached minimum, distribute evenly
+                if not eligible_groups:
+                    eligible_groups = current_groups
+
+            # Among eligible groups, prefer those with fewer members
             target_group = min(eligible_groups, key=lambda g: len(g.members))
             target_group.members.append(member)
 
         # Verify distribution is valid
-        all_distributed = sum(len(g.members) for g in current_groups) == len(
-            non_graduated
-        )
-        valid_sizes = all(4 <= len(g.members) <= 7 for g in current_groups)
+        all_distributed = sum(len(g.members) for g in current_groups) == total_present
+        min_size_met = all(len(g.members) >= 4 for g in current_groups)
 
-        if all_distributed and valid_sizes:
+        if all_distributed and min_size_met:
             total_diversity = sum(g.calculate_diversity_score() for g in current_groups)
             if total_diversity > best_diversity:
                 best_diversity = total_diversity
-                best_nongrad_groups = current_groups
+                best_groups = current_groups
 
-    if best_nongrad_groups is None:
+    if best_groups is None:
         raise ValueError(
             "Could not find a valid distribution satisfying all constraints. "
-            f"Try adjusting the number of groups (currently {nongrad_groups}) "
-            f"for {len(non_graduated)} non-graduated members."
+            f"Try adjusting the number of groups (currently {num_groups}) "
+            f"for {total_present} members."
         )
 
-    # Combine graduated and non-graduated groups
-    groups.extend(best_nongrad_groups)
-    return groups
+    return best_groups
