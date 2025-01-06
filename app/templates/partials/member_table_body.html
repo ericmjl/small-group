@@ -2,7 +2,7 @@
 <tr id="member-row-{{ member.id }}">
     <td class="text-center">{{ loop.index }}</td>
     <td class="text-center">
-        <form class="form-check d-flex justify-content-center" hx-post="/attendance/record" hx-trigger="change" hx-target="#group-divisions-container" hx-swap="innerHTML">
+        <form class="form-check d-flex justify-content-center" hx-post="/attendance/record" hx-trigger="change">
             <input type="hidden" name="member_id" value="{{ member.id }}">
             <input type="hidden" name="attendance_date" value="{{ today.strftime('%Y-%m-%d') }}">
             <input type="hidden" name="notes" value="">

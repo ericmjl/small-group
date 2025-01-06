@@ -15,6 +15,26 @@
             <small class="text-muted">搜尋中...</small>
         </div>
     </div>
+    <div class="mb-3">
+        <button class="btn btn-secondary btn-sm"
+                hx-post="/attendance/select-all"
+                hx-target="#member-table-body"
+                hx-swap="innerHTML">
+            全選 Select All
+        </button>
+        <button class="btn btn-secondary btn-sm"
+                hx-post="/attendance/unselect-all"
+                hx-target="#member-table-body"
+                hx-swap="innerHTML">
+            取消全選 Unselect All
+        </button>
+        <button class="btn btn-primary btn-sm"
+                hx-post="/groups/generate"
+                hx-target="#group-divisions-container"
+                hx-swap="innerHTML">
+            產生分組 Generate Groups
+        </button>
+    </div>
     <table class="table table-striped table-hover align-middle">
         <thead class="table-light">
             <tr>
