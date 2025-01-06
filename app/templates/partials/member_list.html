@@ -1,4 +1,20 @@
 <div id="member-list">
+    <div class="mb-3">
+        <input
+            type="search"
+            class="form-control"
+            placeholder="搜尋組員... (支援拼音)"
+            hx-post="/members/search"
+            hx-trigger="keyup changed delay:500ms, search"
+            hx-target="#member-table-body"
+            hx-indicator="#search-indicator"
+            name="query"
+            autocomplete="off"
+        >
+        <div id="search-indicator" class="htmx-indicator">
+            <small class="text-muted">搜尋中...</small>
+        </div>
+    </div>
     <table class="table table-striped table-hover align-middle">
         <thead class="table-light">
             <tr>
@@ -13,145 +29,21 @@
                 <th class="text-center">操作</th>
             </tr>
         </thead>
-        <tbody>
-            {% for member in members %}
-            <tr id="member-row-{{ member.id }}">
-                <td class="text-center">{{ loop.index }}</td>
-                <td class="text-center">
-                    <div class="form-check d-flex justify-content-center">
-                        <input
-                            class="form-check-input"
-                            type="checkbox"
-                            {% if attendance and attendance.get(member.id, {}).get('present') %}checked{% endif %}
-                            hx-post="/attendance/record"
-                            hx-trigger="change"
-                            hx-vals='{"member_id": "{{ member.id }}", "attendance_date": "{{ today.strftime('%Y-%m-%d') }}", "present": "true"}'
-                            hx-swap="none"
-                        >
-                    </div>
-                </td>
-                <td>
-                    <span class="display-mode">
-                        {{ member.surname }}{{ member.given_name }}
-                    </span>
-                    <span class="edit-mode" style="display: none;">
-                        <input type="text" class="form-control form-control-sm d-inline-block w-auto" name="surname" value="{{ member.surname }}" size="4" placeholder="姓氏">
-                        <input type="text" class="form-control form-control-sm d-inline-block w-auto" name="given_name" value="{{ member.given_name }}" size="4" placeholder="名字">
-                    </span>
-                </td>
-                <td class="text-center">
-                    <span class="display-mode">
-                        {{ "男" if member.gender == "M" else "女" }}
-                    </span>
-                    <span class="edit-mode" style="display: none;">
-                        <select class="form-select form-select-sm" name="gender">
-                            <option value="M" {% if member.gender == "M" %}selected{% endif %}>男</option>
-                            <option value="F" {% if member.gender == "F" %}selected{% endif %}>女</option>
-                        </select>
-                    </span>
-                </td>
-                <td>
-                    <span class="display-mode">
-                        {% if member.faith_status == "baptized" %}
-                            已受洗
-                        {% elif member.faith_status == "believer" %}
-                            信徒
-                        {% elif member.faith_status == "seeker" %}
-                            慕道友
-                        {% else %}
-                            未知
-                        {% endif %}
-                    </span>
-                    <span class="edit-mode" style="display: none;">
-                        <select class="form-select form-select-sm" name="faith_status">
-                            <option value="baptized" {% if member.faith_status == "baptized" %}selected{% endif %}>已受洗</option>
-                            <option value="believer" {% if member.faith_status == "believer" %}selected{% endif %}>信徒</option>
-                            <option value="seeker" {% if member.faith_status == "seeker" %}selected{% endif %}>慕道友</option>
-                            <option value="unknown" {% if member.faith_status == "unknown" %}selected{% endif %}>未知</option>
-                        </select>
-                    </span>
-                </td>
-                <td>
-                    <span class="display-mode">
-                        {% if member.role == "counselor" %}
-                            輔導
-                        {% elif member.role == "facilitator" %}
-                            帶領者
-                        {% else %}
-                            無
-                        {% endif %}
-                    </span>
-                    <span class="edit-mode" style="display: none;">
-                        <select class="form-select form-select-sm" name="role">
-                            <option value="counselor" {% if member.role == "counselor" %}selected{% endif %}>輔導</option>
-                            <option value="facilitator" {% if member.role == "facilitator" %}selected{% endif %}>帶領者</option>
-                            <option value="none" {% if member.role == "none" %}selected{% endif %}>無</option>
-                        </select>
-                    </span>
-                </td>
-                <td>
-                    <span class="display-mode">
-                        {% if member.education_status == "undergraduate" %}
-                            大學生
-                        {% elif member.education_status == "graduate" %}
-                            研究生
-                        {% else %}
-                            已畢業
-                        {% endif %}
-                    </span>
-                    <span class="edit-mode" style="display: none;">
-                        <select class="form-select form-select-sm" name="education_status">
-                            <option value="undergraduate" {% if member.education_status == "undergraduate" %}selected{% endif %}>大學生</option>
-                            <option value="graduate" {% if member.education_status == "graduate" %}selected{% endif %}>研究生</option>
-                            <option value="graduated" {% if member.education_status == "graduated" %}selected{% endif %}>已畢業</option>
-                        </select>
-                    </span>
-                </td>
-                <td class="text-center">
-                    <span class="badge {% if member.active %}bg-success{% else %}bg-secondary{% endif %}">
-                        {{ "活躍" if member.active else "非活躍" }}
-                    </span>
-                </td>
-                <td class="text-center">
-                    <div class="display-mode btn-group btn-group-sm">
-                        <button
-                            type="button"
-                            class="btn btn-outline-primary"
-                            onclick="toggleEditMode({{ member.id }})">
-                            編輯
-                        </button>
-                        <button
-                            type="button"
-                            class="btn btn-outline-secondary"
-                            hx-post="/members/{{ member.id }}/toggle-active"
-                            hx-target="#member-list"
-                            hx-swap="outerHTML">
-                            {{ "停用" if member.active else "啟用" }}
-                        </button>
-                    </div>
-                    <div class="edit-mode btn-group btn-group-sm" style="display: none;">
-                        <button
-                            type="button"
-                            class="btn btn-success"
-                            hx-put="/members/{{ member.id }}/update"
-                            hx-include="closest tr"
-                            hx-target="#member-list"
-                            hx-swap="outerHTML">
-                            保存
-                        </button>
-                        <button
-                            type="button"
-                            class="btn btn-secondary"
-                            onclick="toggleEditMode({{ member.id }})">
-                            取消
-                        </button>
-                    </div>
-                </td>
-            </tr>
-            {% endfor %}
+        <tbody id="member-table-body">
+            {% include "partials/member_table_body.html" %}
         </tbody>
     </table>
 </div>
+
+<style>
+.htmx-indicator {
+    display: none;
+    margin-top: 0.5rem;
+}
+.htmx-request .htmx-indicator {
+    display: block;
+}
+</style>
 
 <script>
 function toggleEditMode(memberId) {
@@ -167,4 +59,17 @@ function toggleEditMode(memberId) {
         el.style.display = el.style.display === 'none' ? '' : 'none';
     });
 }
+
+// Debug HTMX events
+document.body.addEventListener('htmx:beforeRequest', function(evt) {
+    console.log('Sending request:', evt.detail);
+});
+
+document.body.addEventListener('htmx:afterRequest', function(evt) {
+    console.log('Response received:', evt.detail);
+});
+
+document.body.addEventListener('htmx:responseError', function(evt) {
+    console.error('Error in response:', evt.detail);
+});
 </script>

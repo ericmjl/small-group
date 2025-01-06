@@ -21,6 +21,9 @@ templates_path = Path(__file__).parent / "templates"
 templates_path.mkdir(exist_ok=True)
 templates = Jinja2Templates(directory=str(templates_path))
 
+# Make templates available in app.state
+app.state.templates = templates
+
 # Initialize database if DB_PATH is set
 db_path = os.environ.get("DB_PATH")
 if db_path:

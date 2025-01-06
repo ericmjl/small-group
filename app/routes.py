@@ -2,12 +2,24 @@ from datetime import date
 from typing import Annotated
 from fastapi import Depends, Form, Request
 from sqlalchemy.orm import Session
+from pypinyin import lazy_pinyin, Style
+from sqlalchemy import or_
+from loguru import logger
 
 from . import app, templates
 from .database import get_db
 from .models import Member, Attendance
 from app.group_divider import divide_into_groups, GroupMember, MemberRole
 from app.models import Member as DBMember
+
+
+def get_pinyin(text: str) -> str:
+    """Get pinyin for Chinese text.
+
+    :param text: Chinese text
+    :return: Pinyin string
+    """
+    return "".join(lazy_pinyin(text, style=Style.NORMAL))
 
 
 @app.get("/")
@@ -25,7 +37,7 @@ async def home(request: Request, db: Session = Depends(get_db)):
         for record in attendance_records
     }
 
-    return templates.TemplateResponse(
+    return request.app.state.templates.TemplateResponse(
         "index.html",
         {
             "request": request,
@@ -40,7 +52,7 @@ async def home(request: Request, db: Session = Depends(get_db)):
 async def inactive_members(request: Request, db: Session = Depends(get_db)):
     """Page showing inactive members."""
     members = db.query(Member).filter(Member.active == False).all()
-    return templates.TemplateResponse(
+    return request.app.state.templates.TemplateResponse(
         "inactive_members.html",
         {
             "request": request,
@@ -86,7 +98,7 @@ async def add_member(
         for record in attendance_records
     }
 
-    return templates.TemplateResponse(
+    return request.app.state.templates.TemplateResponse(
         "partials/member_list.html",
         {
             "request": request,
@@ -131,7 +143,7 @@ async def update_member(
         for record in attendance_records
     }
 
-    return templates.TemplateResponse(
+    return request.app.state.templates.TemplateResponse(
         "partials/member_list.html",
         {
             "request": request,
@@ -165,7 +177,7 @@ async def toggle_member_active(
         for record in attendance_records
     }
 
-    return templates.TemplateResponse(
+    return request.app.state.templates.TemplateResponse(
         "partials/member_list.html",
         {
             "request": request,
@@ -227,7 +239,7 @@ async def delete_member(
 
     # Return updated inactive members list
     members = db.query(Member).filter(Member.active == False).all()
-    return templates.TemplateResponse(
+    return request.app.state.templates.TemplateResponse(
         "partials/inactive_member_list.html",
         {
             "request": request,
@@ -303,12 +315,12 @@ async def divide_groups(request: Request):
         # Divide into groups
         groups = divide_into_groups(group_members, num_groups)
 
-        return templates.TemplateResponse(
+        return request.app.state.templates.TemplateResponse(
             "partials/group_divisions.html", {"request": request, "groups": groups}
         )
     except ValueError as e:
         # Return an error message if constraints cannot be satisfied
-        return templates.TemplateResponse(
+        return request.app.state.templates.TemplateResponse(
             "partials/group_divisions.html",
             {"request": request, "error": str(e)},
         )
@@ -328,3 +340,61 @@ async def debug_members(request: Request, db: Session = Depends(get_db)):
             for m in all_members
         ],
     }
+
+
+@app.post("/members/search")
+async def search_members(
+    request: Request, query: Annotated[str, Form()], db: Session = Depends(get_db)
+):
+    """Search members by name (supports Chinese and pinyin)."""
+    logger.debug(f"Search query: {query}")
+
+    # Get all active members
+    members = db.query(Member).filter(Member.active == True).all()
+
+    if not query:
+        filtered_members = members
+    else:
+        # Convert query to pinyin if it contains Chinese characters
+        query_pinyin = get_pinyin(query.lower())
+        logger.debug(f"Query pinyin: {query_pinyin}")
+
+        # Filter members based on query
+        filtered_members = []
+        for member in members:
+            full_name = f"{member.surname}{member.given_name}"
+            name_pinyin = get_pinyin(full_name.lower())
+            logger.debug(f"Member {full_name} pinyin: {name_pinyin}")
+
+            # Match against Chinese name or pinyin
+            if query.lower() in full_name.lower() or query_pinyin in name_pinyin:
+                filtered_members.append(member)
+
+    logger.debug(f"Found {len(filtered_members)} matches")
+
+    # Get today's attendance for filtered members
+    today = date.today()
+    attendance_records = (
+        db.query(Attendance)
+        .filter(
+            Attendance.date == today,
+            Attendance.member_id.in_([m.id for m in filtered_members]),
+        )
+        .all()
+    )
+
+    # Convert to dictionary for easy lookup
+    attendance = {
+        record.member_id: {"present": record.present, "notes": record.notes}
+        for record in attendance_records
+    }
+
+    return templates.TemplateResponse(
+        "partials/member_table_body.html",
+        {
+            "request": request,
+            "members": filtered_members,
+            "today": today,
+            "attendance": attendance,
+        },
+    )
