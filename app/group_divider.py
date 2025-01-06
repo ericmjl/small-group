@@ -57,20 +57,28 @@ class Group:
         return sum(1 for m in self.members if m.role == MemberRole.COUNSELOR)
 
     def calculate_diversity_score(self) -> float:
-        """Calculate Shannon Diversity Index for gender and faith_status combined."""
+        """
+        Calculate Shannon Diversity Index for gender and faith_status combined,
+        with a penalty for oversized groups.
+        """
         if not self.members:
             return 0.0
 
-        # Combine gender and faith status into a single characteristic
+        # Calculate base diversity score
         characteristics = [f"{m.gender}_{m.faith_status}" for m in self.members]
         counts = Counter(characteristics)
-
         total = len(characteristics)
         diversity = 0.0
 
         for count in counts.values():
             p = count / total
             diversity -= p * ln(p)
+
+        # Apply size penalty for groups larger than 7
+        # The penalty grows quadratically with size to strongly discourage large groups
+        if len(self.members) > 7:
+            size_penalty = ((len(self.members) - 7) ** 2) * 0.5
+            diversity -= size_penalty
 
         return diversity
 
@@ -90,7 +98,7 @@ def divide_into_groups(
     Each group must have:
     - At least one leader (facilitator or counselor)
     - Minimum of 4 members
-    - Maximum of 7 members per group (can be exceeded only if necessary to ensure leader coverage)
+    - Maximum of 7 members per group (enforced through diversity score penalty)
     - Leaders evenly distributed among all groups
 
     :param members: List of members to divide
@@ -122,24 +130,16 @@ def divide_into_groups(
         m for m in regular_members if m.education_status != "graduated"
     ]
 
-    # Number of groups cannot exceed number of leaders
-    num_groups = min(num_groups, len(leaders))
+    # Calculate minimum number of groups needed based on total members
+    min_groups_by_size = (total_present + 6) // 7
+
+    # Adjust number of groups if we have enough leaders
+    num_groups = min(len(leaders), max(num_groups, min_groups_by_size))
 
     if num_groups < 1:
         raise ValueError("Cannot create groups: no leaders are present")
 
-    # Calculate minimum number of groups needed based on total members
-    min_groups_by_size = (total_present + 6) // 7  # Initial estimate
-
-    # If we have fewer leaders than minimum groups needed, we'll have to exceed
-    # the maximum group size to ensure leader coverage
-    if num_groups < min_groups_by_size:
-        print(
-            f"Warning: Only {num_groups} leaders available for {total_present} members. "
-            "Some groups will exceed the recommended maximum size to ensure leader coverage."
-        )
-
-    # Initialize groups with one leader each
+    # Initialize groups
     groups = [Group(members=[]) for _ in range(num_groups)]
 
     # First, distribute leaders evenly among all groups
@@ -157,44 +157,42 @@ def divide_into_groups(
 
         # Handle graduated members first if there are enough of them
         if len(graduated_regular) >= 4:
-            # Select a random group for graduated members
             grad_group_idx = random.randrange(num_groups)
             grad_group = current_groups[grad_group_idx]
 
-            # Add all graduated members to this group
             for member in graduated_regular:
                 grad_group.members.append(member)
 
         # Now distribute non-graduated members among the remaining groups
         random.shuffle(non_graduated_regular)
 
-        # Calculate minimum members per group to ensure all members are distributed
         remaining_members = (
             non_graduated_regular
             if len(graduated_regular) >= 4
             else graduated_regular + non_graduated_regular
         )
-        min_members_per_group = (len(remaining_members) + num_groups - 1) // num_groups
 
         # Distribute remaining members
         for member in remaining_members:
             if len(graduated_regular) >= 4 and member in graduated_regular:
-                continue  # Skip graduated members as they've already been placed
+                continue
 
-            # Find the group with the fewest members that isn't the graduated group
+            # Find eligible groups (not the grad group if we have one)
             eligible_groups = [
                 g
                 for i, g in enumerate(current_groups)
-                if (len(graduated_regular) < 4 or i != grad_group_idx)
+                if len(graduated_regular) < 4 or i != grad_group_idx
             ]
 
-            # Prioritize groups that haven't reached minimum size
-            under_min_groups = [
-                g for g in eligible_groups if len(g.members) < min_members_per_group
-            ]
-            target_groups = under_min_groups if under_min_groups else eligible_groups
+            # Calculate scores for each eligible group
+            group_scores = []
+            for group in eligible_groups:
+                test_group = group.add_member(member)
+                score = test_group.calculate_diversity_score()
+                group_scores.append((score, group))
 
-            target_group = min(target_groups, key=lambda g: len(g.members))
+            # Choose the group with the highest score
+            _, target_group = max(group_scores, key=lambda x: x[0])
             target_group.members.append(member)
 
         # Verify distribution is valid
