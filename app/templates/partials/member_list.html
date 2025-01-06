@@ -1,47 +1,50 @@
 <div id="member-list">
-    <table>
-        <thead>
+    <table class="table table-striped table-hover align-middle">
+        <thead class="table-light">
             <tr>
-                <th>#</th>
-                <th>出席</th>
+                <th class="text-center">#</th>
+                <th class="text-center">出席</th>
                 <th>姓名</th>
-                <th>性別</th>
+                <th class="text-center">性別</th>
                 <th>信仰狀態</th>
                 <th>角色</th>
                 <th>學業狀態</th>
-                <th>狀態</th>
-                <th>操作</th>
+                <th class="text-center">狀態</th>
+                <th class="text-center">操作</th>
             </tr>
         </thead>
         <tbody>
             {% for member in members %}
             <tr id="member-row-{{ member.id }}">
-                <td>{{ loop.index }}</td>
-                <td>
-                    <input
-                        type="checkbox"
-                        {% if attendance and attendance.get(member.id, {}).get('present') %}checked{% endif %}
-                        hx-post="/attendance/record"
-                        hx-trigger="change"
-                        hx-vals='{"member_id": "{{ member.id }}", "attendance_date": "{{ today.strftime('%Y-%m-%d') }}", "present": "true"}'
-                        hx-swap="none"
-                    >
+                <td class="text-center">{{ loop.index }}</td>
+                <td class="text-center">
+                    <div class="form-check d-flex justify-content-center">
+                        <input
+                            class="form-check-input"
+                            type="checkbox"
+                            {% if attendance and attendance.get(member.id, {}).get('present') %}checked{% endif %}
+                            hx-post="/attendance/record"
+                            hx-trigger="change"
+                            hx-vals='{"member_id": "{{ member.id }}", "attendance_date": "{{ today.strftime('%Y-%m-%d') }}", "present": "true"}'
+                            hx-swap="none"
+                        >
+                    </div>
                 </td>
                 <td>
                     <span class="display-mode">
                         {{ member.surname }}{{ member.given_name }}
                     </span>
                     <span class="edit-mode" style="display: none;">
-                        <input type="text" name="surname" value="{{ member.surname }}" size="4" placeholder="姓氏">
-                        <input type="text" name="given_name" value="{{ member.given_name }}" size="4" placeholder="名字">
+                        <input type="text" class="form-control form-control-sm d-inline-block w-auto" name="surname" value="{{ member.surname }}" size="4" placeholder="姓氏">
+                        <input type="text" class="form-control form-control-sm d-inline-block w-auto" name="given_name" value="{{ member.given_name }}" size="4" placeholder="名字">
                     </span>
                 </td>
-                <td>
+                <td class="text-center">
                     <span class="display-mode">
                         {{ "男" if member.gender == "M" else "女" }}
                     </span>
                     <span class="edit-mode" style="display: none;">
-                        <select name="gender">
+                        <select class="form-select form-select-sm" name="gender">
                             <option value="M" {% if member.gender == "M" %}selected{% endif %}>男</option>
                             <option value="F" {% if member.gender == "F" %}selected{% endif %}>女</option>
                         </select>
@@ -60,7 +63,7 @@
                         {% endif %}
                     </span>
                     <span class="edit-mode" style="display: none;">
-                        <select name="faith_status">
+                        <select class="form-select form-select-sm" name="faith_status">
                             <option value="baptized" {% if member.faith_status == "baptized" %}selected{% endif %}>已受洗</option>
                             <option value="believer" {% if member.faith_status == "believer" %}selected{% endif %}>信徒</option>
                             <option value="seeker" {% if member.faith_status == "seeker" %}selected{% endif %}>慕道友</option>
@@ -79,7 +82,7 @@
                         {% endif %}
                     </span>
                     <span class="edit-mode" style="display: none;">
-                        <select name="role">
+                        <select class="form-select form-select-sm" name="role">
                             <option value="counselor" {% if member.role == "counselor" %}selected{% endif %}>輔導</option>
                             <option value="facilitator" {% if member.role == "facilitator" %}selected{% endif %}>帶領者</option>
                             <option value="none" {% if member.role == "none" %}selected{% endif %}>無</option>
@@ -97,40 +100,49 @@
                         {% endif %}
                     </span>
                     <span class="edit-mode" style="display: none;">
-                        <select name="education_status">
+                        <select class="form-select form-select-sm" name="education_status">
                             <option value="undergraduate" {% if member.education_status == "undergraduate" %}selected{% endif %}>大學生</option>
                             <option value="graduate" {% if member.education_status == "graduate" %}selected{% endif %}>研究生</option>
                             <option value="graduated" {% if member.education_status == "graduated" %}selected{% endif %}>已畢業</option>
                         </select>
                     </span>
                 </td>
-                <td>{{ "活躍" if member.active else "非活躍" }}</td>
-                <td>
-                    <div class="display-mode">
+                <td class="text-center">
+                    <span class="badge {% if member.active %}bg-success{% else %}bg-secondary{% endif %}">
+                        {{ "活躍" if member.active else "非活躍" }}
+                    </span>
+                </td>
+                <td class="text-center">
+                    <div class="display-mode btn-group btn-group-sm">
                         <button
-                            onclick="toggleEditMode({{ member.id }})"
-                            class="edit-button">
+                            type="button"
+                            class="btn btn-outline-primary"
+                            onclick="toggleEditMode({{ member.id }})">
                             編輯
                         </button>
                         <button
+                            type="button"
+                            class="btn btn-outline-secondary"
                             hx-post="/members/{{ member.id }}/toggle-active"
                             hx-target="#member-list"
                             hx-swap="outerHTML">
                             {{ "停用" if member.active else "啟用" }}
                         </button>
                     </div>
-                    <div class="edit-mode" style="display: none;">
+                    <div class="edit-mode btn-group btn-group-sm" style="display: none;">
                         <button
+                            type="button"
+                            class="btn btn-success"
                             hx-put="/members/{{ member.id }}/update"
                             hx-include="closest tr"
                             hx-target="#member-list"
-                            hx-swap="outerHTML"
-                            type="button">
+                            hx-swap="outerHTML">
                             保存
                         </button>
                         <button
-                            onclick="toggleEditMode({{ member.id }})"
-                            type="button">
+                            type="button"
+                            class="btn btn-secondary"
+                            onclick="toggleEditMode({{ member.id }})">
                             取消
                         </button>
                     </div>
@@ -139,14 +151,6 @@
             {% endfor %}
         </tbody>
     </table>
-
-    <button hx-post="/divide-groups"
-            hx-target="#group-divisions"
-            class="divide-groups-btn">
-        Divide into Groups
-    </button>
-
-    <div id="group-divisions"></div>
 </div>
 
 <script>

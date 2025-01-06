@@ -1,27 +1,37 @@
-<div id="group-divisions">
+<div id="group-divisions-container">
     {% if error %}
-        <div class="error-message">
+        <div class="alert alert-danger">
             {{ error }}
         </div>
     {% elif groups %}
-        <h3>Group Divisions</h3>
-        <div class="groups-container">
-            {% for group in groups %}
-                <div class="group-card">
-                    <h4>Group {{ loop.index }}</h4>
-                    <p class="member-count">Members: {{ group.members|length }}</p>
-                    <ul>
-                        {% for member in group.members %}
-                            <li>
-                                {{ member.name }}
-                                {% if member.role != 'regular' %}
-                                    <span class="role-badge">{{ member.role }}</span>
-                                {% endif %}
-                            </li>
-                        {% endfor %}
-                    </ul>
+        {% for group in groups %}
+            <div class="card mb-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">第 {{ loop.index }} 組</h5>
+                    <span class="badge bg-secondary">{{ group.members|length }} 人</span>
                 </div>
-            {% endfor %}
-        </div>
+                <ul class="list-group list-group-flush">
+                    {% for member in group.members %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                {{ member.surname }}{{ member.given_name }}
+                                {% if member.education_status == "graduate" %}
+                                    <small class="text-muted ms-1">研究生</small>
+                                {% elif member.education_status == "graduated" %}
+                                    <small class="text-muted ms-1">已畢業</small>
+                                {% elif member.education_status == "undergraduate" %}
+                                    <small class="text-muted ms-1">大學生</small>
+                                {% endif %}
+                            </div>
+                            {% if member.role in ['facilitator', 'counselor'] %}
+                                <span class="badge {% if member.role == 'facilitator' %}bg-primary{% else %}bg-info{% endif %}">
+                                    {{ '帶領者' if member.role == 'facilitator' else '輔導' }}
+                                </span>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endfor %}
     {% endif %}
 </div>

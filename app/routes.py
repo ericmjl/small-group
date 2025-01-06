@@ -264,10 +264,12 @@ async def divide_groups(request: Request):
         group_members = [
             GroupMember(
                 id=m.id,
-                name=f"{m.surname}{m.given_name}",
+                surname=m.surname,
+                given_name=m.given_name,
                 role=MemberRole.from_db_role(m.role),
                 gender=m.gender,
                 faith_status=m.faith_status,
+                education_status=m.education_status,
                 is_graduated=m.education_status == "graduated",
                 is_present=True,  # All members in this list are present
             )

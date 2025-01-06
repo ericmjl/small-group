@@ -30,12 +30,18 @@ class MemberRole(str, Enum):
 @dataclass
 class GroupMember:
     id: int
-    name: str
+    surname: str
+    given_name: str
     role: MemberRole
     gender: str
     faith_status: str
+    education_status: str
     is_graduated: bool
     is_present: bool
+
+    @property
+    def name(self) -> str:
+        return f"{self.surname}{self.given_name}"
 
 
 @dataclass

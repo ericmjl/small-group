@@ -4,44 +4,74 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>小組管理系統</title>
-    <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- HTMX -->
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <style>
         /* Custom styles */
-        .attendance-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 1rem;
+        .column {
+            height: calc(100vh - 140px);
+            overflow-y: auto;
+            padding: 20px;
+            background-color: #fff;
         }
-        .member-card {
-            padding: 1rem;
-            border: 1px solid var(--border);
-            border-radius: var(--border-radius);
-        }
+
         .attendance-toggle {
             cursor: pointer;
         }
+
         .present {
-            background-color: var(--accent);
-            color: var(--bg);
+            background-color: #198754;
+            color: white;
+        }
+
+        /* Ensure forms look consistent */
+        .form-label {
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control, .form-select {
+            margin-bottom: 1rem;
+        }
+
+        /* Add subtle borders between columns */
+        .border-start-light {
+            border-left: 1px solid #dee2e6 !important;
+        }
+
+        /* Responsive height adjustments */
+        @media (max-width: 768px) {
+            .column {
+                height: auto;
+                min-height: 400px;
+                margin-bottom: 20px;
+            }
         }
     </style>
 </head>
-<body>
-    <header>
-        <h1>小組管理系統</h1>
-        <nav>
-            <a href="/">活躍組員</a>
-            <a href="/inactive">非活躍組員</a>
-        </nav>
+<body class="bg-light">
+    <header class="bg-dark text-white py-3 mb-3">
+        <div class="container-fluid">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h3 mb-0">小組管理系統</h1>
+                <nav>
+                    <a href="/" class="btn btn-outline-light me-2">活躍組員</a>
+                    <a href="/inactive" class="btn btn-outline-light">非活躍組員</a>
+                </nav>
+            </div>
+        </div>
     </header>
 
-    <main>
+    <main class="container-fluid">
         {% block content %}{% endblock %}
     </main>
 
-    <footer>
-        <p>使用 FastAPI、HTMX 和 SimpleCSS 開發</p>
+    <footer class="bg-dark text-white text-center py-3 mt-3">
+        <p class="mb-0">使用 FastAPI、HTMX 和 Bootstrap 開發</p>
     </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

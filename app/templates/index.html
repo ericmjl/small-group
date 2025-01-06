@@ -1,63 +1,77 @@
 {% extends "base.html" %}
 
 {% block content %}
-<section>
-    <h2>組員列表</h2>
-
-    <!-- Add Member Form -->
-    <details>
-        <summary>新增組員</summary>
+<div class="row g-0">
+    <!-- Left Column: Add Member Form -->
+    <div class="col-md-3 column">
+        <h2 class="h4 mb-4">新增組員</h2>
         <form hx-post="/members/add" hx-target="#member-list" hx-swap="outerHTML">
-            <div>
-                <label for="given_name">名字：</label>
-                <input type="text" id="given_name" name="given_name" required>
+            <div class="mb-3">
+                <label for="given_name" class="form-label">名字：</label>
+                <input type="text" class="form-control" id="given_name" name="given_name" required>
             </div>
-            <div>
-                <label for="surname">姓氏：</label>
-                <input type="text" id="surname" name="surname" required>
+            <div class="mb-3">
+                <label for="surname" class="form-label">姓氏：</label>
+                <input type="text" class="form-control" id="surname" name="surname" required>
             </div>
-            <div>
-                <label for="gender">性別：</label>
-                <select id="gender" name="gender" required>
+            <div class="mb-3">
+                <label for="gender" class="form-label">性別：</label>
+                <select class="form-select" id="gender" name="gender" required>
                     <option value="M">男</option>
                     <option value="F">女</option>
                 </select>
             </div>
-            <div>
-                <label for="faith_status">信仰狀態：</label>
-                <select id="faith_status" name="faith_status" required>
+            <div class="mb-3">
+                <label for="faith_status" class="form-label">信仰狀態：</label>
+                <select class="form-select" id="faith_status" name="faith_status" required>
                     <option value="baptized">已受洗</option>
                     <option value="believer">信徒</option>
                     <option value="seeker">慕道友</option>
                     <option value="unknown">未知</option>
                 </select>
             </div>
-            <div>
-                <label for="role">角色：</label>
-                <select id="role" name="role" required>
+            <div class="mb-3">
+                <label for="role" class="form-label">角色：</label>
+                <select class="form-select" id="role" name="role" required>
                     <option value="counselor">輔導</option>
                     <option value="facilitator">帶領者</option>
                     <option value="none">無</option>
                 </select>
             </div>
-            <div>
-                <label for="education_status">學業狀態：</label>
-                <select id="education_status" name="education_status" required>
+            <div class="mb-3">
+                <label for="education_status" class="form-label">學業狀態：</label>
+                <select class="form-select" id="education_status" name="education_status" required>
                     <option value="undergraduate">大學生</option>
                     <option value="graduate">研究生</option>
                     <option value="graduated">已畢業</option>
                 </select>
             </div>
-            <div>
-                <label for="notes">備註：</label>
-                <textarea id="notes" name="notes"></textarea>
+            <div class="mb-3">
+                <label for="notes" class="form-label">備註：</label>
+                <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
             </div>
-            <button type="submit">新增組員</button>
+            <button type="submit" class="btn btn-primary w-100">新增組員</button>
         </form>
-    </details>
+    </div>
 
-    <!-- Member List with Attendance -->
-    <h3>{{ today.strftime('%Y-%m-%d') }} 出席記錄</h3>
-    {% include "partials/member_list.html" %}
-</section>
+    <!-- Middle Column: Attendance Table -->
+    <div class="col-md-6 column border-start-light">
+        <h2 class="h4 mb-4">出席記錄</h2>
+        <h3 class="h5 mb-3">{{ today.strftime('%Y-%m-%d') }}</h3>
+        {% include "partials/member_list.html" %}
+    </div>
+
+    <!-- Right Column: Group Divisions -->
+    <div class="col-md-3 column border-start-light">
+        <h2 class="h4 mb-4">分組</h2>
+        <button hx-post="/divide-groups" hx-target="#group-divisions-container" class="btn btn-warning w-100 mb-4">
+            分組
+        </button>
+        <div id="group-divisions-container">
+            {% if groups %}
+                {% include "partials/group_divisions.html" %}
+            {% endif %}
+        </div>
+    </div>
+</div>
 {% endblock %}
