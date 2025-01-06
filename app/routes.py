@@ -37,6 +37,56 @@ async def home(request: Request, db: Session = Depends(get_db)):
         for record in attendance_records
     }
 
+    # Get present member IDs for group division
+    present_members = {
+        record.member_id for record in attendance_records if record.present
+    }
+
+    # Initialize groups as None
+    groups = None
+
+    try:
+        if present_members:
+            # Convert DB members to GroupMember class - ONLY for present members
+            group_members = [
+                GroupMember(
+                    id=m.id,
+                    surname=m.surname,
+                    given_name=m.given_name,
+                    role=MemberRole.from_db_role(m.role),
+                    gender=m.gender,
+                    faith_status=m.faith_status,
+                    education_status=m.education_status,
+                    is_graduated=m.education_status == "graduated",
+                    is_present=True,
+                )
+                for m in members
+                if m.id in present_members
+            ]
+
+            if len(group_members) >= 4:
+                # Calculate initial number of groups based on present members
+                present_count = len(group_members)
+                leader_count = sum(
+                    1
+                    for m in group_members
+                    if m.role in (MemberRole.FACILITATOR, MemberRole.COUNSELOR)
+                )
+
+                if leader_count > 0:
+                    # Initial estimate: aim for 5-6 people per group
+                    target_group_size = 6
+                    initial_num_groups = max(present_count // target_group_size, 2)
+
+                    # Adjust for leader availability
+                    num_groups = min(initial_num_groups, leader_count)
+
+                    # Divide into groups
+                    groups = divide_into_groups(group_members, num_groups)
+
+    except ValueError as e:
+        logger.warning(f"Could not create initial groups: {e}")
+
     return request.app.state.templates.TemplateResponse(
         "index.html",
         {
@@ -44,6 +94,7 @@ async def home(request: Request, db: Session = Depends(get_db)):
             "members": members,
             "today": today,
             "attendance": attendance,
+            "groups": groups,
         },
     )
 
@@ -192,12 +243,20 @@ async def toggle_member_active(
 async def record_attendance(
     request: Request,
     member_id: Annotated[int, Form()],
-    attendance_date: Annotated[date, Form()],
-    present: Annotated[bool, Form()],
+    attendance_date: Annotated[str, Form()],
+    present: Annotated[str, Form()],
     notes: Annotated[str, Form()] = "",
     db: Session = Depends(get_db),
 ):
     """Record attendance for a member."""
+    # Debug log the incoming data
+    form_data = await request.form()
+    logger.debug(f"Received form data: {dict(form_data)}")
+    logger.debug(f"Processing attendance for member {member_id}, present: {present}")
+
+    # Convert string date to date object
+    attendance_date = date.fromisoformat(attendance_date)
+
     # Check if attendance record already exists
     attendance = (
         db.query(Attendance)
@@ -209,19 +268,106 @@ async def record_attendance(
     )
 
     if attendance:
-        attendance.present = present
+        logger.debug(f"Updating existing attendance record for member {member_id}")
+        attendance.present = present == "true"
         attendance.notes = notes
     else:
+        logger.debug(f"Creating new attendance record for member {member_id}")
         attendance = Attendance(
             member_id=member_id,
             date=attendance_date,
-            present=present,
+            present=present == "true",
             notes=notes,
         )
         db.add(attendance)
 
     db.commit()
-    return {"status": "success"}
+
+    # Get all members and attendance records for group division
+    members = db.query(DBMember).filter(DBMember.active == True).all()
+    attendance_records = (
+        db.query(Attendance)
+        .filter(
+            Attendance.date == attendance_date,
+            Attendance.present == True,  # Only get members marked as present
+        )
+        .all()
+    )
+
+    # Get set of present member IDs
+    present_members = {record.member_id for record in attendance_records}
+    logger.debug(f"Present members after update: {present_members}")
+
+    try:
+        # Convert DB members to GroupMember class - ONLY for present members
+        group_members = [
+            GroupMember(
+                id=m.id,
+                surname=m.surname,
+                given_name=m.given_name,
+                role=MemberRole.from_db_role(m.role),
+                gender=m.gender,
+                faith_status=m.faith_status,
+                education_status=m.education_status,
+                is_graduated=m.education_status == "graduated",
+                is_present=True,
+            )
+            for m in members
+            if m.id in present_members
+        ]
+        logger.debug(f"Group members count: {len(group_members)}")
+
+        if len(group_members) < 4:
+            logger.debug("Not enough members for groups")
+            return request.app.state.templates.TemplateResponse(
+                "partials/group_divisions.html",
+                {
+                    "request": request,
+                    "error": "Not enough present members to form groups (minimum 4 required)",
+                    "groups": None,
+                },
+            )
+
+        # Calculate initial number of groups based on present members
+        present_count = len(group_members)
+        leader_count = sum(
+            1
+            for m in group_members
+            if m.role in (MemberRole.FACILITATOR, MemberRole.COUNSELOR)
+        )
+        logger.debug(f"Present count: {present_count}, Leader count: {leader_count}")
+
+        if leader_count == 0:
+            logger.debug("No leaders present")
+            return request.app.state.templates.TemplateResponse(
+                "partials/group_divisions.html",
+                {
+                    "request": request,
+                    "error": "Cannot create groups: no leaders are present today",
+                    "groups": None,
+                },
+            )
+
+        # Initial estimate: aim for 5-6 people per group
+        target_group_size = 6
+        initial_num_groups = max(present_count // target_group_size, 2)
+        num_groups = min(initial_num_groups, leader_count)
+        logger.debug(f"Creating {num_groups} groups")
+
+        # Divide into groups
+        groups = divide_into_groups(group_members, num_groups)
+
+        return request.app.state.templates.TemplateResponse(
+            "partials/group_divisions.html",
+            {"request": request, "groups": groups, "error": None},
+        )
+
+    except ValueError as e:
+        logger.error(f"Error creating groups: {e}")
+        return request.app.state.templates.TemplateResponse(
+            "partials/group_divisions.html",
+            {"request": request, "error": str(e), "groups": None},
+        )
 
 
 @app.delete("/members/{member_id}")

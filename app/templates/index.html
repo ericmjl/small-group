@@ -64,9 +64,6 @@
     <!-- Right Column: Group Divisions -->
     <div class="col-md-3 column border-start-light">
         <h2 class="h4 mb-4">分組</h2>
-        <button hx-post="/divide-groups" hx-target="#group-divisions-container" class="btn btn-warning w-100 mb-4">
-            分組
-        </button>
         <div id="group-divisions-container">
             {% if groups %}
                 {% include "partials/group_divisions.html" %}
