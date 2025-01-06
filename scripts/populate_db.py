@@ -8,7 +8,7 @@ import sys
 # Add the parent directory to the path so we can import the app
 sys.path.append(str(Path(__file__).parent.parent))
 
-from app.database import SessionLocal
+from app.database import get_db
 from app.models import Member, Attendance
 
 # Mock data
@@ -28,6 +28,21 @@ GIVEN_NAMES = [
     "家瑋",
     "雅雯",
     "詩涵",
+    "宜蓁",
+    "俊宏",
+    "怡萱",
+    "柏宏",
+    "雅琪",
+    "志豪",
+    "佳慧",
+    "宗翰",
+    "雅文",
+    "俊賢",
+    "怡婷",
+    "柏均",
+    "淑娟",
+    "建志",
+    "美君",
 ]
 
 SURNAMES = ["陳", "林", "張", "李", "王", "吳", "劉", "蔡", "楊", "黃"]
@@ -39,18 +54,19 @@ FAITH_STATUSES = ["baptized", "believer", "seeker", "unknown"]
 FAITH_WEIGHTS = [0.3, 0.3, 0.3, 0.1]  # 30% each except unknown
 
 EDUCATION_STATUSES = ["undergraduate", "graduate", "graduated"]
-EDUCATION_WEIGHTS = [0.6, 0.3, 0.1]  # 60% undergrad, 30% grad, 10% graduated
+EDUCATION_WEIGHTS = [0.5, 0.3, 0.2]  # 50% undergrad, 30% grad, 20% graduated
 
 
-def create_mock_members(num_members=15):
+def create_mock_members(num_members=30):
     """Create mock members with realistic Chinese names and varied statuses."""
-    db = SessionLocal()
+    db = next(get_db())
+    created_members = []
 
     try:
         # Create members
-        for _ in range(num_members):
+        for i in range(num_members):
             member = Member(
-                given_name=random.choice(GIVEN_NAMES),
+                given_name=GIVEN_NAMES[i],  # Use unique names
                 surname=random.choice(SURNAMES),
                 gender=random.choice(["M", "F"]),
                 faith_status=random.choices(FAITH_STATUSES, weights=FAITH_WEIGHTS)[0],
@@ -58,40 +74,61 @@ def create_mock_members(num_members=15):
                 education_status=random.choices(
                     EDUCATION_STATUSES, weights=EDUCATION_WEIGHTS
                 )[0],
-                active=random.choices([True, False], weights=[0.8, 0.2])[
-                    0
-                ],  # 80% active
+                active=True,  # Make all members active by default
                 notes="這是測試資料",
             )
             db.add(member)
+            created_members.append(member)
 
         db.commit()
 
-        # Create some attendance records for the past week
-        members = db.query(Member).filter(Member.active == True).all()
+        # Print debug information
+        print(f"\nCreated {len(created_members)} members:")
+        for i, member in enumerate(created_members, 1):
+            print(
+                f"{i}. {member.surname}{member.given_name} "
+                f"({member.gender}, {member.role}, {member.education_status}, "
+                f"active={member.active})"
+            )
+
+        # Create today's attendance records for all members
         today = date.today()
-
-        for i in range(7):  # Past week
-            record_date = today - timedelta(days=i)
-            for member in members:
-                # 70% chance of being present if the member is active
-                if random.random() < 0.7:
-                    attendance = Attendance(
-                        member_id=member.id,
-                        date=record_date,
-                        present=True,
-                        notes="準時參加",
-                    )
-                    db.add(attendance)
+        for member in created_members:
+            attendance = Attendance(
+                member_id=member.id,
+                date=today,
+                present=True,  # Make all members present by default
+                notes="準時參加",
+            )
+            db.add(attendance)
 
         db.commit()
-        print(
-            f"Successfully created {num_members} mock members and their attendance records."
-        )
+        print(f"\nCreated attendance records for {len(created_members)} members.")
 
+    except Exception as e:
+        print(f"Error occurred: {e}")
+        db.rollback()
+        raise
     finally:
         db.close()
 
 
 if __name__ == "__main__":
+    # Delete existing data first
+    db = next(get_db())
+    try:
+        print("Clearing existing data...")
+        db.query(Attendance).delete()
+        db.query(Member).delete()
+        db.commit()
+        print("Database cleared.")
+    except Exception as e:
+        print(f"Error clearing database: {e}")
+        db.rollback()
+        raise
+    finally:
+        db.close()
+
+    # Create new members
+    print("\nCreating new members...")
     create_mock_members()

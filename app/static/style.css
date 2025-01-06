@@ -1,0 +1,37 @@
+/* Add to your existing CSS */
+.groups-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.group-card {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 1rem;
+    background: #f9f9f9;
+}
+
+.role-badge {
+    background: #007bff;
+    color: white;
+    padding: 0.2rem 0.5rem;
+    border-radius: 3px;
+    font-size: 0.8em;
+    margin-left: 0.5rem;
+}
+
+.divide-groups-btn {
+    margin: 1rem 0;
+    padding: 0.5rem 1rem;
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.divide-groups-btn:hover {
+    background: #218838;
+}

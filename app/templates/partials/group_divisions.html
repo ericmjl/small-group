@@ -1,0 +1,27 @@
+<div id="group-divisions">
+    {% if error %}
+        <div class="error-message">
+            {{ error }}
+        </div>
+    {% elif groups %}
+        <h3>Group Divisions</h3>
+        <div class="groups-container">
+            {% for group in groups %}
+                <div class="group-card">
+                    <h4>Group {{ loop.index }}</h4>
+                    <p class="member-count">Members: {{ group.members|length }}</p>
+                    <ul>
+                        {% for member in group.members %}
+                            <li>
+                                {{ member.name }}
+                                {% if member.role != 'regular' %}
+                                    <span class="role-badge">{{ member.role }}</span>
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>

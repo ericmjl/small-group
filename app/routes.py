@@ -6,6 +6,8 @@ from sqlalchemy.orm import Session
 from . import app, templates
 from .database import get_db
 from .models import Member, Attendance
+from app.group_divider import divide_into_groups, GroupMember, MemberRole
+from app.models import Member as DBMember
 
 
 @app.get("/")
@@ -232,3 +234,95 @@ async def delete_member(
             "members": members,
         },
     )
+
+
+@app.post("/divide-groups")
+async def divide_groups(request: Request):
+    """Handle group division request."""
+    try:
+        db = next(get_db())
+        members = db.query(DBMember).all()
+
+        # Get today's attendance records
+        today = date.today()
+        attendance_records = (
+            db.query(Attendance)
+            .filter(
+                Attendance.date == today,
+                Attendance.present == True,  # Only get members marked as present
+            )
+            .all()
+        )
+
+        # Get set of present member IDs
+        present_members = {record.member_id for record in attendance_records}
+
+        if not present_members:
+            raise ValueError("No members are marked as present today.")
+
+        # Convert DB members to our GroupMember class - ONLY for present members
+        group_members = [
+            GroupMember(
+                id=m.id,
+                name=f"{m.surname}{m.given_name}",
+                role=MemberRole.from_db_role(m.role),
+                gender=m.gender,
+                faith_status=m.faith_status,
+                is_graduated=m.education_status == "graduated",
+                is_present=True,  # All members in this list are present
+            )
+            for m in members
+            if m.active and m.id in present_members  # Only include present members
+        ]
+
+        if len(group_members) < 4:
+            raise ValueError(
+                "Not enough present members to form groups (minimum 4 required)"
+            )
+
+        # Calculate initial number of groups based on present members only
+        present_count = len(group_members)  # All members in group_members are present
+        leader_count = sum(
+            1
+            for m in group_members
+            if m.role in (MemberRole.FACILITATOR, MemberRole.COUNSELOR)
+        )
+
+        if leader_count == 0:
+            raise ValueError("Cannot create groups: no leaders are present today")
+
+        # Initial estimate: aim for 5-6 people per group
+        target_group_size = 6
+        initial_num_groups = max(present_count // target_group_size, 2)
+
+        # Adjust for leader availability
+        num_groups = min(initial_num_groups, leader_count)
+
+        # Divide into groups
+        groups = divide_into_groups(group_members, num_groups)
+
+        return templates.TemplateResponse(
+            "partials/group_divisions.html", {"request": request, "groups": groups}
+        )
+    except ValueError as e:
+        # Return an error message if constraints cannot be satisfied
+        return templates.TemplateResponse(
+            "partials/group_divisions.html",
+            {"request": request, "error": str(e)},
+        )
+
+
+@app.get("/debug/members")
+async def debug_members(request: Request, db: Session = Depends(get_db)):
+    """Debug endpoint to show all members in database."""
+    all_members = db.query(Member).all()
+    active_members = db.query(Member).filter(Member.active == True).all()
+
+    return {
+        "total_members": len(all_members),
+        "active_members": len(active_members),
+        "members": [
+            {"id": m.id, "name": f"{m.surname}{m.given_name}", "active": m.active}
+            for m in all_members
+        ],
+    }

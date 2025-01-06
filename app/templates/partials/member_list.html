@@ -2,6 +2,7 @@
     <table>
         <thead>
             <tr>
+                <th>#</th>
                 <th>出席</th>
                 <th>姓名</th>
                 <th>性別</th>
@@ -15,6 +16,7 @@
         <tbody>
             {% for member in members %}
             <tr id="member-row-{{ member.id }}">
+                <td>{{ loop.index }}</td>
                 <td>
                     <input
                         type="checkbox"
@@ -137,6 +139,14 @@
             {% endfor %}
         </tbody>
     </table>
+
+    <button hx-post="/divide-groups"
+            hx-target="#group-divisions"
+            class="divide-groups-btn">
+        Divide into Groups
+    </button>
+
+    <div id="group-divisions"></div>
 </div>
 
 <script>
