@@ -1,5 +1,7 @@
 FROM ghcr.io/prefix-dev/pixi:latest
 
+WORKDIR /app
+
 COPY pyproject.toml .
 COPY pixi.lock .
 COPY run.py .
