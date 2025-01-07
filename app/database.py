@@ -1,9 +1,10 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from pathlib import Path
+import os
 
 # Default database path
-DEFAULT_DB_PATH = Path("app.db")
+DEFAULT_DB_PATH = os.getenv("DB_PATH")
 
 
 def get_engine(db_path: Path = DEFAULT_DB_PATH):

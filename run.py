@@ -12,13 +12,14 @@ def main():
     parser.add_argument(
         "--db-path",
         type=Path,
-        required=True,
+        required=False,
         help="Path to SQLite database",
     )
     args = parser.parse_args()
 
     # Set DB_PATH environment variable for the app
-    os.environ["DB_PATH"] = str(args.db_path.absolute())
+    if args.db_path:
+        os.environ["DB_PATH"] = str(args.db_path.absolute())
 
     # Run the app
     uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
