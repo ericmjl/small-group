@@ -8,5 +8,5 @@ COPY src src
 RUN pixi self-update
 RUN pixi install
 
-EXPOSE 5000
+EXPOSE 8164
 ENTRYPOINT ["pixi", "run", "python", "run.py", "--db-path", "/app/data/prod.db"]
