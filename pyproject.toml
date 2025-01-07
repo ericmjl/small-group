@@ -12,7 +12,7 @@ requires = ["hatchling"]
 
 [tool.pixi.project]
 channels = ["conda-forge"]
-platforms = ["osx-arm64"]
+platforms = ["osx-arm64", "linux-aarch64", "linux-64"]
 
 [tool.pixi.pypi-dependencies]
 small_group = { path = ".", editable = true }
