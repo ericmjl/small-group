@@ -56,10 +56,17 @@ class Group:
     def counselor_count(self) -> int:
         return sum(1 for m in self.members if m.role == MemberRole.COUNSELOR)
 
-    def calculate_diversity_score(self) -> float:
+    def calculate_diversity_score(
+        self, all_groups: List["Group"] | None = None
+    ) -> float:
         """
         Calculate Shannon Diversity Index for gender and faith_status combined,
-        with a penalty for oversized groups.
+        with penalties for:
+        1. Oversized groups (>7 members)
+        2. Size imbalance between groups (if all_groups is provided)
+
+        :param all_groups: Optional list of all groups to calculate size balance penalty
+        :return: Diversity score with penalties applied
         """
         if not self.members:
             return 0.0
@@ -79,6 +86,15 @@ class Group:
         if len(self.members) > 7:
             size_penalty = ((len(self.members) - 7) ** 2) * 0.5
             diversity -= size_penalty
+
+        # Apply size balance penalty if all groups are provided
+        if all_groups:
+            group_sizes = [len(g.members) for g in all_groups]
+            avg_size = sum(group_sizes) / len(group_sizes)
+            size_deviation = abs(len(self.members) - avg_size)
+            # Quadratic penalty for deviating from average size
+            balance_penalty = (size_deviation**2) * 0.3
+            diversity -= balance_penalty
 
         return diversity
 
@@ -101,6 +117,7 @@ def divide_into_groups(
     - Minimum of 4 members
     - Maximum of 7 members per group (enforced through diversity score penalty)
     - Leaders evenly distributed among all groups
+    - Groups should be of similar size (enforced through diversity score penalty)
 
     :param members: List of members to divide
     :param num_groups: Number of groups to create (will be adjusted based on constraints)
@@ -199,7 +216,7 @@ def divide_into_groups(
             group_scores = []
             for group in eligible_groups:
                 test_group = group.add_member(member)
-                score = test_group.calculate_diversity_score()
+                score = test_group.calculate_diversity_score(current_groups)
                 group_scores.append((score, group))
 
             # Choose the group with the highest score
@@ -211,7 +228,9 @@ def divide_into_groups(
         min_size_met = all(len(g.members) >= 4 for g in current_groups)
 
         if all_distributed and min_size_met:
-            total_diversity = sum(g.calculate_diversity_score() for g in current_groups)
+            total_diversity = sum(
+                g.calculate_diversity_score(current_groups) for g in current_groups
+            )
             if total_diversity > best_diversity:
                 best_diversity = total_diversity
                 best_groups = current_groups
