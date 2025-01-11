@@ -93,7 +93,8 @@ def divide_into_groups(
     Divide members into groups optimizing for diversity and constraints.
     Leaders (counselors and facilitators) are distributed evenly across all groups
     regardless of their graduation status. Regular members are then distributed
-    with graduated members preferring to be together.
+    with graduated members preferring to be together, but split into multiple groups
+    if there are more than 7 graduated members.
 
     Each group must have:
     - At least one leader (facilitator or counselor)
@@ -155,33 +156,43 @@ def divide_into_groups(
         # Create a new distribution starting with the leader distribution
         current_groups = [Group(members=group.members[:]) for group in groups]
 
-        # Handle graduated members first if there are enough of them
+        # Handle graduated members based on their count
+        grad_groups = []
         if len(graduated_regular) >= 4:
-            grad_group_idx = random.randrange(num_groups)
-            grad_group = current_groups[grad_group_idx]
+            # If we have more than 7 graduated members, create multiple groups
+            num_grad_groups = (len(graduated_regular) + 6) // 7
+            grad_group_size = len(graduated_regular) // num_grad_groups
 
-            for member in graduated_regular:
-                grad_group.members.append(member)
+            # Select random groups to be graduate groups
+            available_group_indices = list(range(num_groups))
+            random.shuffle(available_group_indices)
+            grad_groups = available_group_indices[:num_grad_groups]
+
+            # Distribute graduated members among grad groups
+            random.shuffle(graduated_regular)
+            for i, member in enumerate(graduated_regular):
+                group_idx = grad_groups[i % num_grad_groups]
+                current_groups[group_idx].members.append(member)
 
         # Now distribute non-graduated members among the remaining groups
         random.shuffle(non_graduated_regular)
 
         remaining_members = (
             non_graduated_regular
-            if len(graduated_regular) >= 4
+            if grad_groups  # If we created grad groups
             else graduated_regular + non_graduated_regular
         )
 
         # Distribute remaining members
         for member in remaining_members:
-            if len(graduated_regular) >= 4 and member in graduated_regular:
+            if grad_groups and member in graduated_regular:
                 continue
 
-            # Find eligible groups (not the grad group if we have one)
+            # Find eligible groups (not the grad groups if we have them)
             eligible_groups = [
                 g
                 for i, g in enumerate(current_groups)
-                if len(graduated_regular) < 4 or i != grad_group_idx
+                if not grad_groups or i not in grad_groups
             ]
 
             # Calculate scores for each eligible group
