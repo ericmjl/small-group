@@ -135,3 +135,6 @@ dmypy.json
 *.egg-info
 
 .env
+
+# SQLite database
+message_log.db
