@@ -62,7 +62,7 @@ class Group:
         """
         Calculate Shannon Diversity Index for gender and faith_status combined,
         with penalties for:
-        1. Oversized groups (>7 members)
+        1. Oversized groups (>8 members)
         2. Size imbalance between groups (if all_groups is provided)
 
         :param all_groups: Optional list of all groups to calculate size balance penalty
@@ -81,10 +81,10 @@ class Group:
             p = count / total
             diversity -= p * ln(p)
 
-        # Apply size penalty for groups larger than 7
+        # Apply size penalty for groups larger than 8
         # The penalty grows quadratically with size to strongly discourage large groups
-        if len(self.members) > 7:
-            size_penalty = ((len(self.members) - 7) ** 2) * 0.5
+        if len(self.members) > 8:
+            size_penalty = ((len(self.members) - 8) ** 2) * 0.5
             diversity -= size_penalty
 
         # Apply size balance penalty if all groups are provided
@@ -110,12 +110,12 @@ def divide_into_groups(
     Leaders (counselors and facilitators) are distributed evenly across all groups
     regardless of their graduation status. Regular members are then distributed
     with graduated members preferring to be together, but split into multiple groups
-    if there are more than 7 graduated members.
+    if there are more than 8 graduated members.
 
     Each group must have:
     - At least one leader (facilitator or counselor)
     - Minimum of 4 members
-    - Maximum of 7 members per group (enforced through diversity score penalty)
+    - Maximum of 8 members per group (enforced through diversity score penalty)
     - Leaders evenly distributed among all groups
     - Groups should be of similar size (enforced through diversity score penalty)
 
@@ -149,7 +149,7 @@ def divide_into_groups(
     ]
 
     # Calculate minimum number of groups needed based on total members
-    min_groups_by_size = (total_present + 6) // 7
+    min_groups_by_size = (total_present + 7) // 8
 
     # Adjust number of groups if we have enough leaders
     num_groups = min(len(leaders), max(num_groups, min_groups_by_size))
@@ -176,8 +176,8 @@ def divide_into_groups(
         # Handle graduated members based on their count
         grad_groups = []
         if len(graduated_regular) >= 4:
-            # If we have more than 7 graduated members, create multiple groups
-            num_grad_groups = (len(graduated_regular) + 6) // 7
+            # If we have more than 8 graduated members, create multiple groups
+            num_grad_groups = (len(graduated_regular) + 7) // 8
             grad_group_size = len(graduated_regular) // num_grad_groups
 
             # Select random groups to be graduate groups

@@ -78,7 +78,7 @@
     <td>
         <span class="display-mode">
             {% if member.education_status == "undergraduate" %}
-                大學生
+                本科生
             {% elif member.education_status == "graduate" %}
                 研究生
             {% else %}
@@ -87,7 +87,7 @@
         </span>
         <span class="edit-mode" style="display: none;">
             <select class="form-select form-select-sm" name="education_status">
-                <option value="undergraduate" {% if member.education_status == "undergraduate" %}selected{% endif %}>大學生</option>
+                <option value="undergraduate" {% if member.education_status == "undergraduate" %}selected{% endif %}>本科生</option>
                 <option value="graduate" {% if member.education_status == "graduate" %}selected{% endif %}>研究生</option>
                 <option value="graduated" {% if member.education_status == "graduated" %}selected{% endif %}>已畢業</option>
             </select>

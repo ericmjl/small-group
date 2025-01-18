@@ -1,9 +1,15 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="row g-0">
+<div class="grid-container">
     <!-- Left Column: Add Member Form -->
-    <div class="col-md-3 column">
+    <div class="column left-panel">
+        <button onclick="togglePanel()" class="toggle-panel close-panel" title="Close Panel">
+            <i class="bi bi-chevron-left"></i>
+        </button>
+        <button onclick="togglePanel()" class="toggle-panel open-panel" title="Open Panel">
+            <i class="bi bi-chevron-right"></i>
+        </button>
         <h2 class="h4 mb-4">新增組員</h2>
         <form hx-post="/members/add" hx-target="#member-list" hx-swap="outerHTML" hx-on::after-request="if(event.detail.successful) this.reset()">
             <div class="mb-3">
@@ -41,7 +47,7 @@
             <div class="mb-3">
                 <label for="education_status" class="form-label">學業狀態：</label>
                 <select class="form-select" id="education_status" name="education_status" required>
-                    <option value="undergraduate">大學生</option>
+                    <option value="undergraduate">本科生</option>
                     <option value="graduate">研究生</option>
                     <option value="graduated">已畢業</option>
                 </select>
@@ -55,14 +61,14 @@
     </div>
 
     <!-- Middle Column: Attendance Table -->
-    <div class="col-md-6 column border-start-light">
+    <div class="column">
         <h2 class="h4 mb-4">出席記錄</h2>
         <h3 class="h5 mb-3">{{ today.strftime('%Y-%m-%d') }}</h3>
         {% include "partials/member_list.html" %}
     </div>
 
     <!-- Right Column: Group Divisions -->
-    <div class="col-md-3 column border-start-light">
+    <div class="column">
         <h2 class="h4 mb-4">分組</h2>
         <div id="group-divisions-container">
             {% if groups %}
