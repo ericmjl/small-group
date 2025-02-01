@@ -23,6 +23,7 @@ class Member(Base):
         String(20), default="undergraduate"
     )  # undergraduate, graduate, graduated
     active: Mapped[bool] = mapped_column(Boolean, default=True)
+    prep_attended: Mapped[bool] = mapped_column(Boolean, default=False)
     notes: Mapped[Optional[str]] = mapped_column(Text)
 
     # Relationship to attendance records
