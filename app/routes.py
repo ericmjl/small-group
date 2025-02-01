@@ -60,6 +60,7 @@ async def home(request: Request, db: Session = Depends(get_db)):
                     education_status=m.education_status,
                     is_graduated=m.education_status == "graduated",
                     is_present=True,
+                    prep_attended=m.prep_attended,
                 )
                 for m in members
                 if m.id in present_members
@@ -348,6 +349,7 @@ async def divide_groups(request: Request):
                 education_status=m.education_status,
                 is_graduated=m.education_status == "graduated",
                 is_present=True,  # All members in this list are present
+                prep_attended=m.prep_attended,
             )
             for m in members
             if m.active and m.id in present_members  # Only include present members
@@ -577,6 +579,7 @@ async def generate_groups(
                     education_status=m.education_status,
                     is_graduated=m.education_status == "graduated",
                     is_present=True,
+                    prep_attended=m.prep_attended,
                 )
                 for m in members
                 if m.id in present_members
@@ -609,3 +612,19 @@ async def generate_groups(
             "error": None if groups else "Not enough members or leaders for groups",
         },
     )
+
+
+@app.post("/members/{member_id}/prep")
+async def update_prep_attendance(
+    request: Request,
+    member_id: int,
+    prep_attended: Annotated[bool, Form()],
+    db: Session = Depends(get_db),
+):
+    """Update prep attendance status for a member."""
+    member = db.query(Member).filter(Member.id == member_id).first()
+    member.prep_attended = prep_attended
+    db.commit()
+    return responses.Response(
+        status_code=204
+    )  # No content needed as checkbox handles its own state

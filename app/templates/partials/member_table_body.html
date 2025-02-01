@@ -16,6 +16,18 @@
             >
         </form>
     </td>
+    <td class="text-center">
+        <form class="form-check d-flex justify-content-center" hx-post="/members/{{ member.id }}/prep" hx-trigger="change">
+            <input type="hidden" name="prep_attended" value="false">
+            <input
+                class="form-check-input"
+                type="checkbox"
+                name="prep_attended"
+                value="true"
+                {% if member.prep_attended %}checked{% endif %}
+            >
+        </form>
+    </td>
     <td>
         <span class="display-mode">
             {{ member.surname }}{{ member.given_name }}
