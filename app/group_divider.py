@@ -164,21 +164,21 @@ def divide_into_groups(
     ]
 
     # Calculate minimum number of groups needed based on total members
-    min_groups_by_size = (total_present + 7) // 8
+    min_groups_by_size = (total_present + 7) // 8  # At most 8 members per group
 
-    # Adjust number of groups based on prep attendees and leaders
-    min_groups_by_prep = len(
-        prep_attendees
-    )  # Need at least one prep attendee per group
-    min_groups_by_leaders = len(leaders) + sum(
+    # Count total leaders (both prep and non-prep)
+    total_leaders = len(leaders) + sum(
         1
         for m in prep_attendees
         if m.role in (MemberRole.FACILITATOR, MemberRole.COUNSELOR)
     )
 
-    # Use the most constraining minimum
+    # Adjust number of groups based on constraints:
+    # - Need enough groups to fit everyone (min_groups_by_size)
+    # - Cannot have more groups than total leaders
     num_groups = min(
-        max(num_groups, min_groups_by_size, min_groups_by_prep), min_groups_by_leaders
+        total_leaders,  # Cannot have more groups than total leaders
+        max(num_groups, min_groups_by_size),  # Must have enough groups to fit everyone
     )
 
     if num_groups < 1:
