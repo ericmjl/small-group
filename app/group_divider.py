@@ -27,7 +27,7 @@ class MemberRole(str, Enum):
         return role_map.get(role.lower(), cls.REGULAR)
 
 
-@dataclass
+@dataclass(frozen=True)
 class GroupMember:
     id: int
     surname: str
@@ -58,6 +58,15 @@ class Group:
         return sum(1 for m in self.members if m.role == MemberRole.COUNSELOR)
 
     @property
+    def leader_count(self) -> int:
+        """Count total number of leaders (facilitators + counselors)."""
+        return sum(
+            1
+            for m in self.members
+            if m.role in (MemberRole.FACILITATOR, MemberRole.COUNSELOR)
+        )
+
+    @property
     def prep_attended_count(self) -> int:
         return sum(1 for m in self.members if m.prep_attended)
 
@@ -70,6 +79,7 @@ class Group:
         1. Oversized groups (>8 members)
         2. Size imbalance between groups (if all_groups is provided)
         3. Prep attendance imbalance between groups
+        4. Leader density imbalance (too many leaders in one group)
 
         :param all_groups: Optional list of all groups to calculate size balance penalty
         :return: Diversity score with penalties applied
@@ -110,6 +120,27 @@ class Group:
             prep_penalty = (prep_deviation**2) * 0.4
             diversity -= prep_penalty
 
+            # Apply leader density penalty
+            # Calculate the ideal leader ratio (total leaders / total members)
+            total_leaders = sum(g.leader_count for g in all_groups)
+            total_members = sum(len(g.members) for g in all_groups)
+            ideal_leader_ratio = (
+                total_leaders / total_members if total_members > 0 else 0
+            )
+
+            # Calculate this group's leader ratio
+            group_leader_ratio = (
+                self.leader_count / len(self.members) if self.members else 0
+            )
+
+            # Apply quadratic penalty for deviating from ideal ratio
+            # Multiply by group size to penalize more for larger groups with bad ratios
+            leader_ratio_deviation = abs(group_leader_ratio - ideal_leader_ratio)
+            leader_density_penalty = (
+                (leader_ratio_deviation**2) * len(self.members) * 0.6
+            )
+            diversity -= leader_density_penalty
+
         return diversity
 
     def add_member(self, member: GroupMember) -> "Group":
@@ -120,216 +151,191 @@ def divide_into_groups(
     members: List[GroupMember], num_groups: int, max_iterations: int = 1000
 ) -> List[Group]:
     """
-    Divide members into groups optimizing for diversity and constraints.
-    The order of constraints is:
-    1. Each group must have at least one member who attended Bible study prep
-    2. Each group must have at least one leader (facilitator or counselor)
-    3. Regular members are distributed with graduated members preferring to be together
+    Divide members into groups using a deterministic approach.
+    Target group size is 7 people.
 
-    Each group must have:
-    - At least one member who attended Bible study prep
-    - At least one leader (facilitator or counselor)
-    - Minimum of 4 members
-    - Maximum of 8 members per group (enforced through diversity score penalty)
-    - Leaders evenly distributed among all groups
-    - Groups should be of similar size (enforced through diversity score penalty)
-    - Prep attendees should be evenly distributed (enforced through diversity score penalty)
+    Distribution sequence:
+    1. Calculate number of groups needed for target size of 7
+    2. Distribute prep attendees first
+    3. Randomly distribute leaders, ensuring each group gets one if possible
+    4. Place graduates together in dedicated groups
+    5. Distribute current students to remaining groups
 
     :param members: List of members to divide
-    :param num_groups: Number of groups to create (will be adjusted based on constraints)
-    :param max_iterations: Maximum number of iterations for optimization
+    :param num_groups: Initial suggestion for number of groups (will be adjusted)
+    :param max_iterations: Not used in this deterministic approach
     :return: List of groups
     """
     # Filter for present members only
     present_members = [m for m in members if m.is_present]
     total_present = len(present_members)
 
-    # First, separate prep attendees from others
-    prep_attendees = [m for m in present_members if m.prep_attended]
-    if not prep_attendees:
-        raise ValueError("Cannot create groups: no members attended Bible study prep")
-
-    # Then separate leaders from regular members
-    leaders = [
-        m
-        for m in present_members
-        if m.role in (MemberRole.FACILITATOR, MemberRole.COUNSELOR)
-        and not m.prep_attended  # Exclude those who are both leaders and prep attendees
-    ]
-    regular_members = [
-        m
-        for m in present_members
-        if m.role not in (MemberRole.FACILITATOR, MemberRole.COUNSELOR)
-        and not m.prep_attended  # Exclude those who attended prep
-    ]
-
-    # Calculate minimum number of groups needed based on total members
-    min_groups_by_size = (total_present + 7) // 8  # At most 8 members per group
-
-    # Count total leaders (both prep and non-prep)
-    total_leaders = len(leaders) + sum(
-        1
-        for m in prep_attendees
-        if m.role in (MemberRole.FACILITATOR, MemberRole.COUNSELOR)
-    )
-
-    # Adjust number of groups based on constraints:
-    # - Need enough groups to fit everyone (min_groups_by_size)
-    # - Cannot have more groups than total leaders
-    num_groups = min(
-        total_leaders,  # Cannot have more groups than total leaders
-        max(num_groups, min_groups_by_size),  # Must have enough groups to fit everyone
-    )
-
-    if num_groups < 1:
-        raise ValueError(
-            "Cannot create groups: insufficient members or constraints cannot be met"
-        )
+    # Calculate number of groups needed for target size of 7
+    TARGET_SIZE = 7
+    num_groups = max(1, (total_present + TARGET_SIZE - 1) // TARGET_SIZE)
 
     # Initialize groups
     groups = [Group(members=[]) for _ in range(num_groups)]
 
-    # First, distribute prep attendees evenly among all groups
-    # Prioritize prep attendees who are also leaders
-    prep_leaders = [
-        m
-        for m in prep_attendees
-        if m.role in (MemberRole.FACILITATOR, MemberRole.COUNSELOR)
-    ]
-    prep_non_leaders = [
-        m
-        for m in prep_attendees
-        if m.role not in (MemberRole.FACILITATOR, MemberRole.COUNSELOR)
-    ]
+    # Helper function to find group with fewest members
+    def find_smallest_group(groups: List[Group]) -> Group:
+        return min(groups, key=lambda g: len(g.members))
 
-    # Distribute prep leaders first
-    random.shuffle(prep_leaders)
-    for i, member in enumerate(prep_leaders):
-        groups[i % num_groups].members.append(member)
-
-    # Then distribute remaining prep attendees
-    random.shuffle(prep_non_leaders)
-    current_group = 0
-    for member in prep_non_leaders:
-        # Find the next group that doesn't have a prep attendee
-        while current_group < num_groups and any(
-            m.prep_attended for m in groups[current_group].members
-        ):
-            current_group += 1
-        if current_group < num_groups:
-            groups[current_group].members.append(member)
-
-    # Then distribute remaining leaders
-    random.shuffle(leaders)
-    for i, leader in enumerate(leaders):
-        # Find the group with the fewest leaders
-        group_idx = min(
-            range(num_groups),
-            key=lambda i: sum(
-                1
-                for m in groups[i].members
-                if m.role in (MemberRole.FACILITATOR, MemberRole.COUNSELOR)
-            ),
-        )
-        groups[group_idx].members.append(leader)
-
-    # Optimization loop for remaining members
-    best_groups = None
-    best_diversity = float("-inf")
-
-    for _ in range(max_iterations):
-        # Create a new distribution starting with the prep and leader distribution
-        current_groups = [Group(members=group.members[:]) for group in groups]
-
-        # Handle graduated members based on their count
-        grad_groups = []
-        graduated_regular = [
-            m for m in regular_members if m.education_status == "graduated"
+    # Helper function to find group with fewest members that has no prep attendee
+    def find_group_without_prep(groups: List[Group]) -> Group | None:
+        no_prep_groups = [
+            g for g in groups if not any(m.prep_attended for m in g.members)
         ]
-        non_graduated_regular = [
-            m for m in regular_members if m.education_status != "graduated"
-        ]
-
-        if len(graduated_regular) >= 4:
-            # If we have more than 8 graduated members, create multiple groups
-            num_grad_groups = (len(graduated_regular) + 7) // 8
-            grad_group_size = len(graduated_regular) // num_grad_groups
-
-            # Select random groups to be graduate groups
-            available_group_indices = list(range(num_groups))
-            random.shuffle(available_group_indices)
-            grad_groups = available_group_indices[:num_grad_groups]
-
-            # Distribute graduated members among grad groups
-            random.shuffle(graduated_regular)
-            for i, member in enumerate(graduated_regular):
-                group_idx = grad_groups[i % num_grad_groups]
-                current_groups[group_idx].members.append(member)
-
-        # Now distribute non-graduated members among the remaining groups
-        random.shuffle(non_graduated_regular)
-
-        remaining_members = (
-            non_graduated_regular
-            if grad_groups  # If we created grad groups
-            else graduated_regular + non_graduated_regular
+        return (
+            min(no_prep_groups, key=lambda g: len(g.members))
+            if no_prep_groups
+            else None
         )
 
-        # Distribute remaining members
-        for member in remaining_members:
-            if grad_groups and member in graduated_regular:
-                continue
-
-            # Find eligible groups (not the grad groups if we have them)
-            eligible_groups = [
-                g
-                for i, g in enumerate(current_groups)
-                if not grad_groups or i not in grad_groups
-            ]
-
-            # Calculate scores for each eligible group
-            group_scores = []
-            for group in eligible_groups:
-                test_group = group.add_member(member)
-                score = test_group.calculate_diversity_score(current_groups)
-                group_scores.append((score, group))
-
-            # Choose the group with the highest score
-            _, target_group = max(group_scores, key=lambda x: x[0])
-            target_group.members.append(member)
-
-        # Verify distribution is valid
-        all_distributed = sum(len(g.members) for g in current_groups) == total_present
-        min_size_met = all(len(g.members) >= 4 for g in current_groups)
-        prep_constraint_met = all(
-            any(m.prep_attended for m in g.members) for g in current_groups
-        )
-        leader_constraint_met = all(
-            any(
+    # Helper function to find group with fewest members that has no leader
+    def find_group_without_leader(groups: List[Group]) -> Group | None:
+        no_leader_groups = [
+            g
+            for g in groups
+            if not any(
                 m.role in (MemberRole.FACILITATOR, MemberRole.COUNSELOR)
                 for m in g.members
             )
-            for g in current_groups
+        ]
+        return (
+            min(no_leader_groups, key=lambda g: len(g.members))
+            if no_leader_groups
+            else None
         )
 
-        if (
-            all_distributed
-            and min_size_met
-            and prep_constraint_met
-            and leader_constraint_met
-        ):
-            total_diversity = sum(
-                g.calculate_diversity_score(current_groups) for g in current_groups
+    # 1. First distribute prep attendees
+    prep_attendees = [m for m in present_members if m.prep_attended]
+    random.shuffle(prep_attendees)  # Randomly shuffle prep attendees
+
+    # Calculate target number of prep attendees per group
+    total_prep = len(prep_attendees)
+    min_prep_per_group = total_prep // num_groups
+    extra_prep = total_prep % num_groups
+
+    # Initialize list of group indices and shuffle them for random distribution
+    group_indices = list(range(num_groups))
+    random.shuffle(group_indices)
+
+    # First distribute minimum number of prep attendees to each group
+    prep_index = 0
+    for group_idx in group_indices:
+        for _ in range(min_prep_per_group):
+            if prep_index < len(prep_attendees):
+                groups[group_idx].members.append(prep_attendees[prep_index])
+                prep_index += 1
+
+    # Distribute remaining prep attendees (the extras) randomly
+    for i in range(extra_prep):
+        if prep_index < len(prep_attendees):
+            groups[group_indices[i]].members.append(prep_attendees[prep_index])
+            prep_index += 1
+
+    # Track who's been assigned
+    assigned_members = set(prep_attendees)
+
+    # 2. Distribute remaining leaders (facilitators and counselors)
+    remaining_leaders = [
+        m
+        for m in present_members
+        if m.role in (MemberRole.FACILITATOR, MemberRole.COUNSELOR)
+        and m not in assigned_members
+    ]
+
+    # Randomly shuffle the leaders
+    random.shuffle(remaining_leaders)
+
+    # First pass: try to give each group one leader
+    groups_without_leaders = [
+        i
+        for i, g in enumerate(groups)
+        if not any(
+            m.role in (MemberRole.FACILITATOR, MemberRole.COUNSELOR) for m in g.members
+        )
+    ]
+
+    # Randomly assign one leader to each group that needs one
+    for group_idx in groups_without_leaders:
+        if remaining_leaders:
+            leader = remaining_leaders.pop()
+            groups[group_idx].members.append(leader)
+            assigned_members.add(leader)
+
+    # Second pass: randomly distribute any remaining leaders
+    if remaining_leaders:
+        # Get indices of groups sorted by size (smallest first)
+        available_groups = list(range(len(groups)))
+        random.shuffle(available_groups)  # Randomize order for equal-sized groups
+        available_groups.sort(key=lambda i: len(groups[i].members))
+
+        # Distribute remaining leaders
+        for leader in remaining_leaders:
+            group_idx = available_groups[0]  # Take the first (smallest) group
+            groups[group_idx].members.append(leader)
+            assigned_members.add(leader)
+
+            # Re-sort available_groups by new group sizes
+            available_groups.sort(key=lambda i: len(groups[i].members))
+
+    # 3. Handle remaining members
+    unassigned = [m for m in present_members if m not in assigned_members]
+
+    # Separate graduates and current students
+    graduates = [m for m in unassigned if m.education_status == "graduated"]
+    current_students = [m for m in unassigned if m.education_status != "graduated"]
+
+    # Calculate how many graduate groups we need
+    grad_group_size = TARGET_SIZE  # Target same size as regular groups
+    num_grad_groups = (len(graduates) + grad_group_size - 1) // grad_group_size
+
+    if graduates:
+        # Sort groups by number of graduates already in them (from prep/leader distribution)
+        groups_by_grad_count = sorted(
+            enumerate(groups),
+            key=lambda x: sum(
+                1 for m in x[1].members if m.education_status == "graduated"
+            ),
+            reverse=True,
+        )
+
+        # Select the groups that already have the most graduates to be graduate groups
+        grad_group_indices = {idx for idx, _ in groups_by_grad_count[:num_grad_groups]}
+
+        # Distribute graduates to graduate groups
+        for member in graduates:
+            # Find the graduate group with fewest members
+            target_idx, target_group = min(
+                ((i, g) for i, g in enumerate(groups) if i in grad_group_indices),
+                key=lambda x: len(x[1].members),
             )
-            if total_diversity > best_diversity:
-                best_diversity = total_diversity
-                best_groups = current_groups
+            target_group.members.append(member)
+            assigned_members.add(member)
 
-    if best_groups is None:
-        raise ValueError(
-            "Could not find a valid distribution satisfying all constraints. "
-            f"Try adjusting the number of groups (currently {num_groups}) "
-            f"for {total_present} members."
-        )
+        # Now distribute current students to non-graduate groups
+        non_grad_groups = [
+            g for i, g in enumerate(groups) if i not in grad_group_indices
+        ]
 
-    return best_groups
+        if non_grad_groups:  # If we have non-graduate groups
+            for student in current_students:
+                # Find the non-graduate group with fewest members
+                target_group = min(non_grad_groups, key=lambda g: len(g.members))
+                target_group.members.append(student)
+                assigned_members.add(student)
+        else:  # If all groups are graduate groups, distribute to minimize size differences
+            for student in current_students:
+                target_group = find_smallest_group(groups)
+                target_group.members.append(student)
+                assigned_members.add(student)
+    else:
+        # If no graduates, just distribute current students evenly
+        for student in current_students:
+            target_group = find_smallest_group(groups)
+            target_group.members.append(student)
+            assigned_members.add(student)
+
+    return groups

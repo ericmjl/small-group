@@ -109,6 +109,9 @@
         <span class="badge {% if member.active %}bg-success{% else %}bg-secondary{% endif %}">
             {{ "活躍" if member.active else "非活躍" }}
         </span>
+        {% if member.prep_attended %}
+            <span class="badge bg-success ms-1">已預備</span>
+        {% endif %}
     </td>
     <td class="text-center">
         <div class="display-mode btn-group btn-group-sm">
