@@ -552,9 +552,10 @@ async def unselect_all_attendance(
 @app.post("/groups/generate")
 async def generate_groups(
     request: Request,
+    target_size: int = Form(7),  # Default to 7 if not provided
     db: Session = Depends(get_db),
 ):
-    """Generate groups based on current attendance."""
+    """Generate groups based on current attendance and target size."""
     today = date.today()
     members = db.query(Member).filter_by(active=True).all()
     attendance_records = db.query(Attendance).filter_by(date=today).all()
@@ -586,20 +587,10 @@ async def generate_groups(
             ]
 
             if len(group_members) >= 4:
-                # Calculate initial number of groups based on present members
+                # Calculate initial number of groups based on target size
                 present_count = len(group_members)
-                leader_count = sum(
-                    1
-                    for m in group_members
-                    if m.role in (MemberRole.FACILITATOR, MemberRole.COUNSELOR)
-                )
-
-                if leader_count > 0:
-                    # Initial estimate: aim for 5-6 people per group
-                    target_group_size = 6
-                    initial_num_groups = max(present_count // target_group_size, 2)
-                    num_groups = min(initial_num_groups, leader_count)
-                    groups = divide_into_groups(group_members, num_groups)
+                num_groups = max(1, (present_count + target_size - 1) // target_size)
+                groups = divide_into_groups(group_members, num_groups)
 
     except ValueError as e:
         logger.warning(f"Could not create groups: {e}")
