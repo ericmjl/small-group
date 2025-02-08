@@ -23,11 +23,16 @@
                                     <small class="text-muted ms-1">本科生</small>
                                 {% endif %}
                             </div>
-                            {% if member.role in ['facilitator', 'counselor'] %}
-                                <span class="badge {% if member.role == 'facilitator' %}bg-primary{% else %}bg-info{% endif %}">
-                                    {{ '帶領者' if member.role == 'facilitator' else '輔導' }}
-                                </span>
-                            {% endif %}
+                            <div>
+                                {% if member.prep_attended %}
+                                    <span class="badge bg-success me-1">已預備</span>
+                                {% endif %}
+                                {% if member.role in ['facilitator', 'counselor'] %}
+                                    <span class="badge {% if member.role == 'facilitator' %}bg-primary{% else %}bg-info{% endif %}">
+                                        {{ '帶領者' if member.role == 'facilitator' else '輔導' }}
+                                    </span>
+                                {% endif %}
+                            </div>
                         </li>
                     {% endfor %}
                 </ul>
