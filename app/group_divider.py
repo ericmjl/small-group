@@ -164,14 +164,17 @@ def balance_gender_in_groups(
     logger.info(f"Starting gender balancing with {max_iterations} iterations")
 
     def can_swap(m1: GroupMember, m2: GroupMember) -> bool:
-        # Only swap if:
-        # 1. Different genders
-        # 2. Same leadership role
-        # 3. Same prep attendance status
-        # 4. Both non-graduates
+        """Check if two members can be swapped.
+
+        Rules:
+        1. Different genders
+        2. Same exact role (counselor with counselor, facilitator with facilitator, regular with regular)
+        3. Same prep attendance status
+        4. Both non-graduates
+        """
         return (
             m1.gender != m2.gender
-            and m1.role == m2.role
+            and m1.role == m2.role  # Must be exact same role
             and m1.prep_attended == m2.prep_attended
             and not m1.is_graduated
             and not m2.is_graduated
@@ -191,13 +194,15 @@ def balance_gender_in_groups(
         return not any(m.is_graduated for m in regular_members)
 
     def calculate_gender_entropy(groups: List[Group]) -> float:
-        """Calculate Shannon entropy of gender distribution for each non-graduate group."""
+        """Calculate Shannon entropy of gender distribution and counselor distribution
+        for each non-graduate group."""
         total_entropy = 0.0
         for group in groups:
             # Skip graduate groups
             if not is_non_graduate_group(group):
                 continue
 
+            # Gender entropy
             males = sum(1 for m in group.members if m.gender == "M")
             females = sum(1 for m in group.members if m.gender == "F")
             total = males + females
@@ -212,6 +217,31 @@ def balance_gender_in_groups(
                 if p_female > 0:
                     group_entropy -= p_female * ln(p_female)
                 total_entropy += group_entropy
+
+            # Counselor balance entropy
+            # We want to balance male/female counselors within each group
+            male_counselors = sum(
+                1
+                for m in group.members
+                if m.gender == "M" and m.role == MemberRole.COUNSELOR
+            )
+            female_counselors = sum(
+                1
+                for m in group.members
+                if m.gender == "F" and m.role == MemberRole.COUNSELOR
+            )
+            total_counselors = male_counselors + female_counselors
+
+            if total_counselors > 0:
+                p_male_counselor = male_counselors / total_counselors
+                p_female_counselor = female_counselors / total_counselors
+                counselor_entropy = 0.0
+                if p_male_counselor > 0:
+                    counselor_entropy -= p_male_counselor * ln(p_male_counselor)
+                if p_female_counselor > 0:
+                    counselor_entropy -= p_female_counselor * ln(p_female_counselor)
+                # Weight counselor entropy equally with gender entropy
+                total_entropy += counselor_entropy
 
         return total_entropy
 
