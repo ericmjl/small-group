@@ -382,7 +382,11 @@ def divide_into_groups(
 
     # Calculate number of groups needed for target size of 7
     TARGET_SIZE = 7
-    num_groups = max(1, (total_present + TARGET_SIZE - 1) // TARGET_SIZE)
+    min_groups = max(1, (total_present + TARGET_SIZE - 1) // TARGET_SIZE)
+    max_groups = total_present // 2  # Don't allow groups smaller than 2 people
+
+    # Use requested num_groups but keep it within reasonable bounds
+    num_groups = max(min_groups, min(num_groups, max_groups))
 
     # Initialize groups
     groups = [Group(members=[]) for _ in range(num_groups)]
