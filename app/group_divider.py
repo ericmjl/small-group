@@ -2,8 +2,9 @@ from dataclasses import dataclass
 from typing import List, Dict, Set
 from enum import Enum
 import random
-from math import log as ln
+from math import log as ln, exp
 from collections import Counter
+from loguru import logger
 
 
 class MemberRole(str, Enum):
@@ -147,6 +148,155 @@ class Group:
         return Group(members=self.members + [member])
 
 
+def balance_gender_in_groups(
+    groups: List[Group], max_iterations: int = 1000, temperature: float = 0.1
+) -> List[Group]:
+    """
+    Balance gender distribution in non-graduate groups through stochastic swaps using
+    Metropolis-Hastings acceptance criteria. Only swaps members with identical status
+    (prep attendance and leadership role) between different gender but within non-graduate groups.
+
+    :param groups: List of groups to balance
+    :param max_iterations: Maximum number of swap attempts
+    :param temperature: Temperature parameter for Metropolis-Hastings (higher = more likely to accept worse swaps)
+    :return: List of balanced groups
+    """
+    logger.info(f"Starting gender balancing with {max_iterations} iterations")
+
+    def can_swap(m1: GroupMember, m2: GroupMember) -> bool:
+        # Only swap if:
+        # 1. Different genders
+        # 2. Same leadership role
+        # 3. Same prep attendance status
+        # 4. Both non-graduates
+        return (
+            m1.gender != m2.gender
+            and m1.role == m2.role
+            and m1.prep_attended == m2.prep_attended
+            and not m1.is_graduated
+            and not m2.is_graduated
+        )
+
+    def is_non_graduate_group(group: Group) -> bool:
+        """Determine if a group is considered a non-graduate group.
+        A group is non-graduate if all regular members (excluding leaders/counselors) are students.
+        """
+        # Get regular members (non-leaders)
+        regular_members = [m for m in group.members if m.role == MemberRole.REGULAR]
+
+        if not regular_members:  # If no regular members, consider it non-graduate
+            return True
+
+        # Check if any regular member is graduated
+        return not any(m.is_graduated for m in regular_members)
+
+    def calculate_gender_entropy(groups: List[Group]) -> float:
+        """Calculate Shannon entropy of gender distribution for each non-graduate group."""
+        total_entropy = 0.0
+        for group in groups:
+            # Skip graduate groups
+            if not is_non_graduate_group(group):
+                continue
+
+            males = sum(1 for m in group.members if m.gender == "M")
+            females = sum(1 for m in group.members if m.gender == "F")
+            total = males + females
+
+            if total > 0:
+                p_male = males / total
+                p_female = females / total
+                # Calculate entropy, handling edge cases where p = 0
+                group_entropy = 0.0
+                if p_male > 0:
+                    group_entropy -= p_male * ln(p_male)
+                if p_female > 0:
+                    group_entropy -= p_female * ln(p_female)
+                total_entropy += group_entropy
+
+        return total_entropy
+
+    # Create a deep copy of groups to work with
+    balanced_groups = [Group(members=list(group.members)) for group in groups]
+
+    # Get non-graduate groups
+    non_grad_groups = [
+        (i, g) for i, g in enumerate(balanced_groups) if is_non_graduate_group(g)
+    ]
+    logger.info(f"Found {len(non_grad_groups)} non-graduate groups to balance")
+
+    if len(non_grad_groups) < 2:
+        logger.warning("Not enough non-graduate groups to perform balancing")
+        return groups
+
+    current_entropy = calculate_gender_entropy(balanced_groups)
+    best_entropy = current_entropy
+    best_groups = balanced_groups.copy()
+    logger.info(f"Initial entropy: {current_entropy}")
+
+    # Add debug info about each group
+    for i, group in enumerate(balanced_groups):
+        grad_count = sum(1 for m in group.members if m.is_graduated)
+        total = len(group.members)
+        is_non_grad = is_non_graduate_group(group)
+        logger.debug(
+            f"Group {i+1}: {grad_count}/{total} graduates, considered non-grad: {is_non_grad}"
+        )
+
+    for iteration in range(max_iterations):
+        if iteration % 100 == 0:
+            logger.debug(f"Iteration {iteration}, current entropy: {current_entropy}")
+
+        g1_idx, g1 = random.choice(non_grad_groups)
+        g2_idx, g2 = random.choice(non_grad_groups)
+
+        if g1_idx == g2_idx:
+            continue
+
+        # Try to find swappable members
+        swappable_pairs = [
+            (m1, m2) for m1 in g1.members for m2 in g2.members if can_swap(m1, m2)
+        ]
+
+        if not swappable_pairs:
+            continue
+
+        # Randomly select a swappable pair
+        m1, m2 = random.choice(swappable_pairs)
+
+        # Temporarily make the swap
+        g1_members = [m2 if m == m1 else m for m in g1.members]
+        g2_members = [m1 if m == m2 else m for m in g2.members]
+
+        # Create temporary groups with the swap
+        temp_groups = balanced_groups.copy()
+        temp_groups[g1_idx] = Group(members=g1_members)
+        temp_groups[g2_idx] = Group(members=g2_members)
+
+        # Calculate new entropy
+        new_entropy = calculate_gender_entropy(temp_groups)
+
+        # Metropolis-Hastings acceptance criteria
+        # Higher entropy is better (more balanced)
+        delta_entropy = new_entropy - current_entropy
+
+        # Always accept if better, otherwise use M-H criteria
+        if delta_entropy > 0 or random.random() < exp(delta_entropy / temperature):
+            balanced_groups = temp_groups
+            current_entropy = new_entropy
+
+            # Keep track of best solution seen
+            if current_entropy > best_entropy:
+                best_entropy = current_entropy
+                best_groups = [Group(members=list(g.members)) for g in balanced_groups]
+                logger.info(f"New best entropy found: {best_entropy}")
+
+        # Anneal temperature (optional)
+        temperature *= 0.999
+
+    logger.info(f"Gender balancing complete. Final entropy: {best_entropy}")
+    return best_groups
+
+
 def divide_into_groups(
     members: List[GroupMember], num_groups: int, max_iterations: int = 1000
 ) -> List[Group]:
@@ -163,7 +313,7 @@ def divide_into_groups(
 
     :param members: List of members to divide
     :param num_groups: Initial suggestion for number of groups (will be adjusted)
-    :param max_iterations: Not used in this deterministic approach
+    :param max_iterations: Number of iterations for gender balancing (if > 0)
     :return: List of groups
     """
     # Filter for present members only
@@ -337,5 +487,9 @@ def divide_into_groups(
             target_group = find_smallest_group(groups)
             target_group.members.append(student)
             assigned_members.add(student)
+
+    # Apply gender balancing if max_iterations > 0
+    if max_iterations > 0:
+        groups = balance_gender_in_groups(groups, max_iterations)
 
     return groups

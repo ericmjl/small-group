@@ -10,7 +10,12 @@ import json
 from . import app, templates
 from .database import get_db
 from .models import Member, Attendance
-from app.group_divider import divide_into_groups, GroupMember, MemberRole
+from app.group_divider import (
+    divide_into_groups,
+    GroupMember,
+    MemberRole,
+    balance_gender_in_groups,
+)
 from app.models import Member as DBMember
 
 
@@ -83,8 +88,10 @@ async def home(request: Request, db: Session = Depends(get_db)):
                     # Adjust for leader availability
                     num_groups = min(initial_num_groups, leader_count)
 
-                    # Divide into groups
-                    groups = divide_into_groups(group_members, num_groups)
+                    # Divide into groups - initial proposal without gender balancing
+                    groups = divide_into_groups(
+                        group_members, num_groups, max_iterations=0
+                    )
 
     except ValueError as e:
         logger.warning(f"Could not create initial groups: {e}")
@@ -555,7 +562,7 @@ async def generate_groups(
     target_size: int = Form(7),  # Default to 7 if not provided
     db: Session = Depends(get_db),
 ):
-    """Generate groups based on current attendance and target size."""
+    """Generate groups based on current attendance and target size, with gender balancing."""
     today = date.today()
     members = db.query(Member).filter_by(active=True).all()
     attendance_records = db.query(Attendance).filter_by(date=today).all()
@@ -568,6 +575,7 @@ async def generate_groups(
 
     try:
         if present_members:
+            logger.info(f"Generating groups for {len(present_members)} present members")
             # Convert DB members to GroupMember class - ONLY for present members
             group_members = [
                 GroupMember(
@@ -590,10 +598,25 @@ async def generate_groups(
                 # Calculate initial number of groups based on target size
                 present_count = len(group_members)
                 num_groups = max(1, (present_count + target_size - 1) // target_size)
-                groups = divide_into_groups(group_members, num_groups)
+                logger.info(
+                    f"Will create {num_groups} groups with target size {target_size}"
+                )
+
+                # Stage 1: Initial group division without gender balancing
+                logger.info("Stage 1: Initial group division")
+                initial_groups = divide_into_groups(
+                    group_members, num_groups, max_iterations=0
+                )
+
+                # Stage 2: Apply gender balancing using Metropolis-Hastings
+                logger.info("Stage 2: Starting gender balancing")
+                groups = balance_gender_in_groups(initial_groups, max_iterations=1000)
+                logger.info("Gender balancing complete")
 
     except ValueError as e:
         logger.warning(f"Could not create groups: {e}")
+    except Exception as e:
+        logger.exception("Unexpected error during group generation")
 
     return templates.TemplateResponse(
         "partials/group_divisions.html",
