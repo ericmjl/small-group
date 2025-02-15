@@ -419,47 +419,84 @@ def divide_into_groups(
     assigned_members = set(prep_attendees)
 
     # 2. Distribute remaining leaders (facilitators and counselors)
-    remaining_leaders = [
+    remaining_facilitators = [
         m
         for m in present_members
-        if m.role in (MemberRole.FACILITATOR, MemberRole.COUNSELOR)
-        and m not in assigned_members
+        if m.role == MemberRole.FACILITATOR and m not in assigned_members
+    ]
+    remaining_counselors = [
+        m
+        for m in present_members
+        if m.role == MemberRole.COUNSELOR and m not in assigned_members
     ]
 
     # Randomly shuffle the leaders
-    random.shuffle(remaining_leaders)
+    random.shuffle(remaining_facilitators)
+    random.shuffle(remaining_counselors)
 
-    # First pass: try to give each group one leader
-    groups_without_leaders = [
+    # First pass: try to give each group one facilitator
+    groups_without_facilitators = [
         i
         for i, g in enumerate(groups)
-        if not any(
-            m.role in (MemberRole.FACILITATOR, MemberRole.COUNSELOR) for m in g.members
-        )
+        if not any(m.role == MemberRole.FACILITATOR for m in g.members)
     ]
 
-    # Randomly assign one leader to each group that needs one
-    for group_idx in groups_without_leaders:
-        if remaining_leaders:
-            leader = remaining_leaders.pop()
-            groups[group_idx].members.append(leader)
-            assigned_members.add(leader)
+    # Randomly assign one facilitator to each group that needs one
+    for group_idx in groups_without_facilitators:
+        if remaining_facilitators:
+            facilitator = remaining_facilitators.pop()
+            groups[group_idx].members.append(facilitator)
+            assigned_members.add(facilitator)
 
-    # Second pass: randomly distribute any remaining leaders
-    if remaining_leaders:
+    # Second pass: try to give each group one counselor
+    groups_without_counselors = [
+        i
+        for i, g in enumerate(groups)
+        if not any(m.role == MemberRole.COUNSELOR for m in g.members)
+    ]
+
+    # Randomly assign one counselor to each group that needs one
+    for group_idx in groups_without_counselors:
+        if remaining_counselors:
+            counselor = remaining_counselors.pop()
+            groups[group_idx].members.append(counselor)
+            assigned_members.add(counselor)
+
+    # Third pass: distribute any remaining facilitators
+    if remaining_facilitators:
         # Get indices of groups sorted by size (smallest first)
         available_groups = list(range(len(groups)))
         random.shuffle(available_groups)  # Randomize order for equal-sized groups
         available_groups.sort(key=lambda i: len(groups[i].members))
 
-        # Distribute remaining leaders
-        for leader in remaining_leaders:
+        # Distribute remaining facilitators
+        for facilitator in remaining_facilitators:
             group_idx = available_groups[0]  # Take the first (smallest) group
-            groups[group_idx].members.append(leader)
-            assigned_members.add(leader)
+            groups[group_idx].members.append(facilitator)
+            assigned_members.add(facilitator)
 
             # Re-sort available_groups by new group sizes
             available_groups.sort(key=lambda i: len(groups[i].members))
+
+    # Fourth pass: distribute any remaining counselors evenly
+    if remaining_counselors:
+        # Sort groups by number of counselors (fewest first)
+        available_groups = list(range(len(groups)))
+
+        while remaining_counselors:
+            # Sort groups by counselor count, then by total size for tiebreaking
+            available_groups.sort(
+                key=lambda i: (
+                    sum(1 for m in groups[i].members if m.role == MemberRole.COUNSELOR),
+                    len(groups[i].members),
+                )
+            )
+
+            # Add counselor to group with fewest counselors
+            group_idx = available_groups[0]
+            counselor = remaining_counselors.pop()
+            groups[group_idx].members.append(counselor)
+            assigned_members.add(counselor)
 
     # 3. Handle remaining members
     unassigned = [m for m in present_members if m not in assigned_members]
