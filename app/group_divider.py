@@ -163,6 +163,17 @@ def balance_gender_in_groups(
     """
     logger.info(f"Starting gender balancing with {max_iterations} iterations")
 
+    def get_member_ids(groups: List[Group]) -> Set[int]:
+        """Get set of all member IDs across all groups."""
+        return {m.id for g in groups for m in g.members}
+
+    def has_duplicates(groups: List[Group]) -> bool:
+        """Check if any member appears in multiple groups."""
+        all_ids = []
+        for g in groups:
+            all_ids.extend(m.id for m in g.members)
+        return len(all_ids) != len(set(all_ids))
+
     def can_swap(m1: GroupMember, m2: GroupMember) -> bool:
         """Check if two members can be swapped.
 
@@ -196,6 +207,10 @@ def balance_gender_in_groups(
     def calculate_gender_entropy(groups: List[Group]) -> float:
         """Calculate Shannon entropy of gender distribution and counselor distribution
         for each non-graduate group."""
+        # First check for duplicates - return very low entropy if duplicates found
+        if has_duplicates(groups):
+            return float("-inf")
+
         total_entropy = 0.0
         for group in groups:
             # Skip graduate groups
@@ -258,6 +273,9 @@ def balance_gender_in_groups(
         logger.warning("Not enough non-graduate groups to perform balancing")
         return groups
 
+    # Store initial member IDs to ensure no members are lost or duplicated
+    initial_member_ids = get_member_ids(balanced_groups)
+
     current_entropy = calculate_gender_entropy(balanced_groups)
     best_entropy = current_entropy
     best_groups = balanced_groups.copy()
@@ -302,6 +320,11 @@ def balance_gender_in_groups(
         temp_groups[g1_idx] = Group(members=g1_members)
         temp_groups[g2_idx] = Group(members=g2_members)
 
+        # Verify no members were lost or duplicated
+        temp_member_ids = get_member_ids(temp_groups)
+        if temp_member_ids != initial_member_ids:
+            continue
+
         # Calculate new entropy
         new_entropy = calculate_gender_entropy(temp_groups)
 
@@ -322,6 +345,13 @@ def balance_gender_in_groups(
 
         # Anneal temperature (optional)
         temperature *= 0.999
+
+    # Verify final groups have no duplicates
+    if has_duplicates(best_groups):
+        logger.error(
+            "Duplicate members found in final groups, reverting to original groups"
+        )
+        return groups
 
     logger.info(f"Gender balancing complete. Final entropy: {best_entropy}")
     return best_groups
@@ -537,23 +567,33 @@ def divide_into_groups(
             g for i, g in enumerate(groups) if i not in grad_group_indices
         ]
 
+        # Keep track of distributed students to prevent duplicates
+        distributed_students = set()
+
         if non_grad_groups:  # If we have non-graduate groups
             for student in current_students:
-                # Find the non-graduate group with fewest members
-                target_group = min(non_grad_groups, key=lambda g: len(g.members))
-                target_group.members.append(student)
-                assigned_members.add(student)
+                if student not in distributed_students:
+                    # Find the non-graduate group with fewest members
+                    target_group = min(non_grad_groups, key=lambda g: len(g.members))
+                    target_group.members.append(student)
+                    assigned_members.add(student)
+                    distributed_students.add(student)
         else:  # If all groups are graduate groups, distribute to minimize size differences
             for student in current_students:
+                if student not in distributed_students:
+                    target_group = find_smallest_group(groups)
+                    target_group.members.append(student)
+                    assigned_members.add(student)
+                    distributed_students.add(student)
+    else:
+        # If no graduates, just distribute current students evenly
+        distributed_students = set()
+        for student in current_students:
+            if student not in distributed_students:
                 target_group = find_smallest_group(groups)
                 target_group.members.append(student)
                 assigned_members.add(student)
-    else:
-        # If no graduates, just distribute current students evenly
-        for student in current_students:
-            target_group = find_smallest_group(groups)
-            target_group.members.append(student)
-            assigned_members.add(student)
+                distributed_students.add(student)
 
     # Apply gender balancing if max_iterations > 0
     if max_iterations > 0:
