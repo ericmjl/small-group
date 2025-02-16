@@ -75,7 +75,7 @@ class Group:
         self, all_groups: List["Group"] | None = None
     ) -> float:
         """
-        Calculate Shannon Diversity Index for gender and faith_status combined,
+        Calculate Shannon Diversity Index for gender, faith_status, and role combined,
         with penalties for:
         1. Oversized groups (>8 members)
         2. Size imbalance between groups (if all_groups is provided)
@@ -89,7 +89,9 @@ class Group:
             return 0.0
 
         # Calculate base diversity score
-        characteristics = [f"{m.gender}_{m.faith_status}" for m in self.members]
+        characteristics = [
+            f"{m.gender}_{m.faith_status}_{m.role.value}" for m in self.members
+        ]
         counts = Counter(characteristics)
         total = len(characteristics)
         diversity = 0.0
