@@ -74,7 +74,7 @@
             {% if member.role == "counselor" %}
                 輔導
             {% elif member.role == "facilitator" %}
-                帶領者
+                同工
             {% else %}
                 無
             {% endif %}
@@ -82,7 +82,7 @@
         <span class="edit-mode" style="display: none;">
             <select class="form-select form-select-sm" name="role">
                 <option value="counselor" {% if member.role == "counselor" %}selected{% endif %}>輔導</option>
-                <option value="facilitator" {% if member.role == "facilitator" %}selected{% endif %}>帶領者</option>
+                <option value="facilitator" {% if member.role == "facilitator" %}selected{% endif %}>同工</option>
                 <option value="none" {% if member.role == "none" %}selected{% endif %}>無</option>
             </select>
         </span>
