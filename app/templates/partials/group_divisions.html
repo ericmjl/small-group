@@ -17,6 +17,11 @@
         .gender-tag-female {
             background-color: #dc3545;
         }
+        .warning-icon {
+            font-size: 1.2rem;
+            color: #ffc107;
+            cursor: help;
+        }
     </style>
     {% if error %}
         <div class="alert alert-danger">
@@ -26,7 +31,16 @@
         {% for group in groups %}
             <div class="card mb-3">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">第 {{ loop.index }} 組</h5>
+                    <div class="d-flex align-items-center">
+                        <h5 class="card-title mb-0">第 {{ loop.index }} 組</h5>
+                        {% set males = group.members|selectattr("gender", "equalto", "M")|list %}
+                        {% set females = group.members|selectattr("gender", "equalto", "F")|list %}
+                        {% if (males|length == 1 and females|length > 1) or (females|length == 1 and males|length > 1) %}
+                            <span class="ms-2 warning-icon" data-bs-toggle="tooltip" data-bs-placement="top" title="這個小組有性別不平衡的情況：一位{{ '弟兄' if males|length == 1 else '姊妹' }}和{{ females|length if males|length == 1 else males|length }}位{{ '姊妹' if males|length == 1 else '弟兄' }}">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                            </span>
+                        {% endif %}
+                    </div>
                     <span class="badge bg-secondary">{{ group.members|length }} 人</span>
                 </div>
                 <ul class="list-group list-group-flush">
@@ -68,3 +82,22 @@
         </div>
     {% endif %}
 </div>
+
+<script>
+    // Initialize tooltips on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        initTooltips();
+    });
+
+    // Initialize tooltips after HTMX content swap
+    document.body.addEventListener('htmx:afterSwap', function() {
+        console.log('HTMX content swapped, reinitializing tooltips');
+        initTooltips();
+    });
+
+    function initTooltips() {
+        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+        console.log('Found tooltip triggers:', tooltipTriggerList.length);
+        const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+    }
+</script>
