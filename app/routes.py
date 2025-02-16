@@ -642,3 +642,61 @@ async def update_prep_attendance(
     return responses.Response(
         status_code=204
     )  # No content needed as checkbox handles its own state
+
+
+@app.post("/members/prep/select-all")
+async def select_all_prep(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    """Mark all active members as having done prep."""
+    members = db.query(Member).filter_by(active=True).all()
+    for member in members:
+        member.prep_attended = True
+    db.commit()
+
+    today = date.today()
+    attendance_records = db.query(Attendance).filter_by(date=today).all()
+    attendance = {
+        record.member_id: {"present": record.present, "notes": record.notes}
+        for record in attendance_records
+    }
+
+    return templates.TemplateResponse(
+        "partials/member_table_body.html",
+        {
+            "request": request,
+            "members": members,
+            "today": today,
+            "attendance": attendance,
+        },
+    )
+
+
+@app.post("/members/prep/unselect-all")
+async def unselect_all_prep(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    """Mark all active members as not having done prep."""
+    members = db.query(Member).filter_by(active=True).all()
+    for member in members:
+        member.prep_attended = False
+    db.commit()
+
+    today = date.today()
+    attendance_records = db.query(Attendance).filter_by(date=today).all()
+    attendance = {
+        record.member_id: {"present": record.present, "notes": record.notes}
+        for record in attendance_records
+    }
+
+    return templates.TemplateResponse(
+        "partials/member_table_body.html",
+        {
+            "request": request,
+            "members": members,
+            "today": today,
+            "attendance": attendance,
+        },
+    )
