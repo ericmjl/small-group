@@ -53,7 +53,7 @@
                                 {% endif %}
                                 {% if member.role in ['facilitator', 'counselor'] %}
                                     <span class="badge {% if member.role == 'facilitator' %}bg-primary{% else %}bg-info{% endif %}">
-                                        {{ '帶領者' if member.role == 'facilitator' else '輔導' }}
+                                        {{ '同工' if member.role == 'facilitator' else '輔導' }}
                                     </span>
                                 {% endif %}
                             </div>
