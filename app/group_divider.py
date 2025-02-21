@@ -355,29 +355,55 @@ def divide_into_groups(
 
     # 1. First distribute prep attendees
     prep_attendees = [m for m in present_members if m.prep_attended]
-    random.shuffle(prep_attendees)  # Randomly shuffle prep attendees
 
-    # Calculate target number of prep attendees per group
-    total_prep = len(prep_attendees)
-    min_prep_per_group = total_prep // num_groups
-    extra_prep = total_prep % num_groups
+    # Separate counselors from other prep attendees
+    prep_counselors = [m for m in prep_attendees if m.role == MemberRole.COUNSELOR]
+    other_prep_attendees = [m for m in prep_attendees if m.role != MemberRole.COUNSELOR]
+
+    # Calculate target number of counselors per group
+    total_prep_counselors = len(prep_counselors)
+    min_counselors_per_group = total_prep_counselors // num_groups
+    extra_counselors = total_prep_counselors % num_groups
 
     # Initialize list of group indices and shuffle them for random distribution
     group_indices = list(range(num_groups))
     random.shuffle(group_indices)
 
-    # First distribute minimum number of prep attendees to each group
+    # First distribute counselors evenly
+    counselor_index = 0
+    for group_idx in group_indices:
+        for _ in range(min_counselors_per_group):
+            if counselor_index < len(prep_counselors):
+                groups[group_idx].members.append(prep_counselors[counselor_index])
+                counselor_index += 1
+
+    # Distribute extra counselors to smallest groups
+    available_groups = sorted(range(num_groups), key=lambda i: len(groups[i].members))
+    for i in range(extra_counselors):
+        if counselor_index < len(prep_counselors):
+            group_idx = available_groups[i]
+            groups[group_idx].members.append(prep_counselors[counselor_index])
+            counselor_index += 1
+
+    # Now distribute remaining prep attendees
+    total_other_prep = len(other_prep_attendees)
+    min_prep_per_group = total_other_prep // num_groups
+    extra_prep = total_other_prep % num_groups
+
+    # Distribute minimum number of other prep attendees
     prep_index = 0
     for group_idx in group_indices:
         for _ in range(min_prep_per_group):
-            if prep_index < len(prep_attendees):
-                groups[group_idx].members.append(prep_attendees[prep_index])
+            if prep_index < len(other_prep_attendees):
+                groups[group_idx].members.append(other_prep_attendees[prep_index])
                 prep_index += 1
 
-    # Distribute remaining prep attendees (the extras) randomly
+    # Distribute remaining prep attendees to smallest groups
+    available_groups = sorted(range(num_groups), key=lambda i: len(groups[i].members))
     for i in range(extra_prep):
-        if prep_index < len(prep_attendees):
-            groups[group_indices[i]].members.append(prep_attendees[prep_index])
+        if prep_index < len(other_prep_attendees):
+            group_idx = available_groups[i]
+            groups[group_idx].members.append(other_prep_attendees[prep_index])
             prep_index += 1
 
     # Track who's been assigned
