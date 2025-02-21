@@ -605,7 +605,10 @@ async def generate_groups(
                 # Stage 1: Initial group division without gender balancing
                 logger.info("Stage 1: Initial group division")
                 initial_groups = divide_into_groups(
-                    group_members, num_groups, max_iterations=0
+                    group_members,
+                    num_groups,
+                    max_iterations=0,
+                    target_size=target_size,  # Pass target_size parameter
                 )
 
                 # Stage 2: Apply gender balancing using Metropolis-Hastings

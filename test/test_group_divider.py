@@ -7,42 +7,177 @@ def sample_members():
     """Create a sample set of members for testing."""
     return [
         # Leaders (non-graduated)
-        GroupMember(1, "Leader1", MemberRole.FACILITATOR, "M", "believer", False, True),
-        GroupMember(2, "Leader2", MemberRole.COUNSELOR, "F", "seeker", False, True),
-        GroupMember(3, "Leader3", MemberRole.FACILITATOR, "F", "believer", False, True),
+        GroupMember(
+            id=1,
+            surname="Leader",
+            given_name="1",
+            role=MemberRole.FACILITATOR,
+            gender="M",
+            faith_status="believer",
+            education_status="undergraduate",
+            is_graduated=False,
+            is_present=True,
+            prep_attended=True,
+        ),
+        GroupMember(
+            id=2,
+            surname="Leader",
+            given_name="2",
+            role=MemberRole.COUNSELOR,
+            gender="F",
+            faith_status="seeker",
+            education_status="undergraduate",
+            is_graduated=False,
+            is_present=True,
+            prep_attended=True,
+        ),
+        GroupMember(
+            id=3,
+            surname="Leader",
+            given_name="3",
+            role=MemberRole.FACILITATOR,
+            gender="F",
+            faith_status="believer",
+            education_status="undergraduate",
+            is_graduated=False,
+            is_present=True,
+            prep_attended=True,
+        ),
         # Regular members (non-graduated)
-        GroupMember(4, "Member1", MemberRole.REGULAR, "M", "believer", False, True),
-        GroupMember(5, "Member2", MemberRole.REGULAR, "F", "seeker", False, True),
-        GroupMember(6, "Member3", MemberRole.REGULAR, "M", "seeker", False, True),
-        GroupMember(7, "Member4", MemberRole.REGULAR, "F", "believer", False, True),
-        GroupMember(8, "Member5", MemberRole.REGULAR, "M", "believer", False, True),
+        GroupMember(
+            id=4,
+            surname="Member",
+            given_name="1",
+            role=MemberRole.REGULAR,
+            gender="M",
+            faith_status="believer",
+            education_status="undergraduate",
+            is_graduated=False,
+            is_present=True,
+            prep_attended=True,
+        ),
+        GroupMember(
+            id=5,
+            surname="Member",
+            given_name="2",
+            role=MemberRole.REGULAR,
+            gender="F",
+            faith_status="seeker",
+            education_status="undergraduate",
+            is_graduated=False,
+            is_present=True,
+            prep_attended=False,
+        ),
+        GroupMember(
+            id=6,
+            surname="Member",
+            given_name="3",
+            role=MemberRole.REGULAR,
+            gender="M",
+            faith_status="seeker",
+            education_status="undergraduate",
+            is_graduated=False,
+            is_present=True,
+            prep_attended=False,
+        ),
+        GroupMember(
+            id=7,
+            surname="Member",
+            given_name="4",
+            role=MemberRole.REGULAR,
+            gender="F",
+            faith_status="believer",
+            education_status="undergraduate",
+            is_graduated=False,
+            is_present=True,
+            prep_attended=True,
+        ),
+        GroupMember(
+            id=8,
+            surname="Member",
+            given_name="5",
+            role=MemberRole.REGULAR,
+            gender="M",
+            faith_status="believer",
+            education_status="undergraduate",
+            is_graduated=False,
+            is_present=True,
+            prep_attended=False,
+        ),
         # Graduated members
-        GroupMember(9, "Grad1", MemberRole.REGULAR, "M", "believer", True, True),
-        GroupMember(10, "Grad2", MemberRole.REGULAR, "F", "believer", True, True),
-        GroupMember(11, "Grad3", MemberRole.REGULAR, "M", "seeker", True, True),
-        GroupMember(12, "Grad4", MemberRole.REGULAR, "F", "seeker", True, True),
+        GroupMember(
+            id=9,
+            surname="Grad",
+            given_name="1",
+            role=MemberRole.REGULAR,
+            gender="M",
+            faith_status="believer",
+            education_status="graduated",
+            is_graduated=True,
+            is_present=True,
+            prep_attended=True,
+        ),
+        GroupMember(
+            id=10,
+            surname="Grad",
+            given_name="2",
+            role=MemberRole.REGULAR,
+            gender="F",
+            faith_status="believer",
+            education_status="graduated",
+            is_graduated=True,
+            is_present=True,
+            prep_attended=True,
+        ),
+        GroupMember(
+            id=11,
+            surname="Grad",
+            given_name="3",
+            role=MemberRole.REGULAR,
+            gender="M",
+            faith_status="seeker",
+            education_status="graduated",
+            is_graduated=True,
+            is_present=True,
+            prep_attended=False,
+        ),
+        GroupMember(
+            id=12,
+            surname="Grad",
+            given_name="4",
+            role=MemberRole.REGULAR,
+            gender="F",
+            faith_status="seeker",
+            education_status="graduated",
+            is_graduated=True,
+            is_present=True,
+            prep_attended=False,
+        ),
     ]
 
 
 @pytest.fixture
 def absent_members(sample_members):
     """Create a copy of sample members with some marked as absent."""
-    # Create deep copies of each GroupMember
-    absent = [
-        GroupMember(
-            id=m.id,
-            name=m.name,
-            role=m.role,
-            gender=m.gender,
-            faith_status=m.faith_status,
-            is_graduated=m.is_graduated,
-            is_present=m.is_present,
+    # Create new instances with modified is_present values
+    absent = []
+    for i, m in enumerate(sample_members):
+        # Mark Member2 (index 4) and Grad1 (index 9) as absent
+        is_present = False if i in [4, 9] else m.is_present
+        absent.append(
+            GroupMember(
+                id=m.id,
+                surname=m.surname,
+                given_name=m.given_name,
+                role=m.role,
+                gender=m.gender,
+                faith_status=m.faith_status,
+                education_status=m.education_status,
+                is_graduated=m.is_graduated,
+                is_present=is_present,
+                prep_attended=m.prep_attended,
+            )
         )
-        for m in sample_members
-    ]
-    # Mark some members as absent
-    absent[4].is_present = False  # Member2
-    absent[9].is_present = False  # Grad1
     return absent
 
 
@@ -144,15 +279,48 @@ def test_edge_cases():
     """Test edge cases and error conditions."""
     # Test with too few members
     few_members = [
-        GroupMember(1, "Leader1", MemberRole.FACILITATOR, "M", "believer", False, True),
-        GroupMember(2, "Member1", MemberRole.REGULAR, "M", "believer", False, True),
+        GroupMember(
+            id=1,
+            surname="Leader",
+            given_name="1",
+            role=MemberRole.FACILITATOR,
+            gender="M",
+            faith_status="believer",
+            education_status="undergraduate",
+            is_graduated=False,
+            is_present=True,
+            prep_attended=True,
+        ),
+        GroupMember(
+            id=2,
+            surname="Member",
+            given_name="1",
+            role=MemberRole.REGULAR,
+            gender="M",
+            faith_status="believer",
+            education_status="undergraduate",
+            is_graduated=False,
+            is_present=True,
+            prep_attended=True,
+        ),
     ]
     with pytest.raises(ValueError):
         divide_into_groups(few_members, num_groups=1)
 
     # Test with no leaders
     no_leaders = [
-        GroupMember(i, f"Member{i}", MemberRole.REGULAR, "M", "believer", False, True)
+        GroupMember(
+            id=i,
+            surname="Member",
+            given_name=str(i),
+            role=MemberRole.REGULAR,
+            gender="M",
+            faith_status="believer",
+            education_status="undergraduate",
+            is_graduated=False,
+            is_present=True,
+            prep_attended=True,
+        )
         for i in range(1, 8)
     ]
     with pytest.raises(ValueError):
@@ -161,23 +329,285 @@ def test_edge_cases():
     # Test with all members absent
     all_absent = [
         GroupMember(
-            1, "Leader1", MemberRole.FACILITATOR, "M", "believer", False, False
+            id=1,
+            surname="Leader",
+            given_name="1",
+            role=MemberRole.FACILITATOR,
+            gender="M",
+            faith_status="believer",
+            education_status="undergraduate",
+            is_graduated=False,
+            is_present=False,
+            prep_attended=True,
         ),
-        GroupMember(2, "Member1", MemberRole.REGULAR, "M", "believer", False, False),
-        GroupMember(3, "Member2", MemberRole.REGULAR, "F", "seeker", False, False),
+        GroupMember(
+            id=2,
+            surname="Member",
+            given_name="1",
+            role=MemberRole.REGULAR,
+            gender="M",
+            faith_status="believer",
+            education_status="undergraduate",
+            is_graduated=False,
+            is_present=False,
+            prep_attended=True,
+        ),
+        GroupMember(
+            id=3,
+            surname="Member",
+            given_name="2",
+            role=MemberRole.REGULAR,
+            gender="F",
+            faith_status="seeker",
+            education_status="undergraduate",
+            is_graduated=False,
+            is_present=False,
+            prep_attended=True,
+        ),
     ]
     with pytest.raises(ValueError):
         divide_into_groups(all_absent, num_groups=1)
 
 
 def test_group_size_constraints(sample_members):
-    """Test that groups respect size constraints of 4-7 members."""
+    """Test that groups respect minimum size constraint of 4 members."""
     groups = divide_into_groups(sample_members, num_groups=2)
 
     for group in groups:
         assert (
             len(group.members) >= 4
         ), f"Group has fewer than 4 members: {len(group.members)}"
-        assert (
-            len(group.members) <= 7
-        ), f"Group has more than 7 members: {len(group.members)}"
+
+
+def test_target_size_behavior(sample_members):
+    """Test that groups respect target size preferences while maintaining other constraints."""
+    # Test with target size of 9
+    groups_large = divide_into_groups(sample_members, num_groups=1, target_size=9)
+
+    # Test with target size of 5
+    groups_small = divide_into_groups(sample_members, num_groups=2, target_size=5)
+
+    # Groups should still maintain minimum size of 4
+    for group in groups_large + groups_small:
+        assert len(group.members) >= 4, "Groups must have at least 4 members"
+
+    # When target size is large, we should get fewer groups
+    assert len(groups_large) <= len(
+        groups_small
+    ), "Larger target size should result in fewer groups"
+
+    # Check that each non-graduated group still has at least one leader
+    for group in groups_large + groups_small:
+        if not any(m.is_graduated for m in group.members):
+            assert any(
+                m.role in (MemberRole.FACILITATOR, MemberRole.COUNSELOR)
+                for m in group.members
+            ), "Non-graduate groups must have at least one leader"
+
+
+def test_diversity_score_with_target_size():
+    """Test that diversity score calculation properly accounts for target size."""
+    members = [
+        GroupMember(
+            id=1,
+            surname="Leader",
+            given_name="1",
+            role=MemberRole.FACILITATOR,
+            gender="M",
+            faith_status="believer",
+            education_status="undergraduate",
+            is_graduated=False,
+            is_present=True,
+            prep_attended=True,
+        ),
+        GroupMember(
+            id=2,
+            surname="Member",
+            given_name="1",
+            role=MemberRole.REGULAR,
+            gender="F",
+            faith_status="seeker",
+            education_status="undergraduate",
+            is_graduated=False,
+            is_present=True,
+            prep_attended=True,
+        ),
+        GroupMember(
+            id=3,
+            surname="Member",
+            given_name="2",
+            role=MemberRole.REGULAR,
+            gender="M",
+            faith_status="believer",
+            education_status="undergraduate",
+            is_graduated=False,
+            is_present=True,
+            prep_attended=True,
+        ),
+        GroupMember(
+            id=4,
+            surname="Member",
+            given_name="3",
+            role=MemberRole.REGULAR,
+            gender="F",
+            faith_status="seeker",
+            education_status="undergraduate",
+            is_graduated=False,
+            is_present=True,
+            prep_attended=True,
+        ),
+        GroupMember(
+            id=5,
+            surname="Member",
+            given_name="4",
+            role=MemberRole.REGULAR,
+            gender="M",
+            faith_status="believer",
+            education_status="undergraduate",
+            is_graduated=False,
+            is_present=True,
+            prep_attended=True,
+        ),
+        GroupMember(
+            id=6,
+            surname="Member",
+            given_name="5",
+            role=MemberRole.REGULAR,
+            gender="F",
+            faith_status="seeker",
+            education_status="undergraduate",
+            is_graduated=False,
+            is_present=True,
+            prep_attended=True,
+        ),
+        GroupMember(
+            id=7,
+            surname="Member",
+            given_name="6",
+            role=MemberRole.REGULAR,
+            gender="M",
+            faith_status="believer",
+            education_status="undergraduate",
+            is_graduated=False,
+            is_present=True,
+            prep_attended=True,
+        ),
+        GroupMember(
+            id=8,
+            surname="Member",
+            given_name="7",
+            role=MemberRole.REGULAR,
+            gender="F",
+            faith_status="seeker",
+            education_status="undergraduate",
+            is_graduated=False,
+            is_present=True,
+            prep_attended=True,
+        ),
+    ]
+
+    # Create two groups with different sizes
+    group_small = Group(members=members[:4])  # 4 members
+    group_large = Group(members=members[:8])  # 8 members
+
+    # Test with target size of 4
+    score_target_4_small = group_small.calculate_diversity_score(target_size=4)
+    score_target_4_large = group_large.calculate_diversity_score(target_size=4)
+
+    # Test with target size of 8
+    score_target_8_small = group_small.calculate_diversity_score(target_size=8)
+    score_target_8_large = group_large.calculate_diversity_score(target_size=8)
+
+    # Group matching target size should score better than group deviating from target
+    assert (
+        score_target_4_small > score_target_4_large
+    ), "Group matching target size 4 should score better"
+    assert (
+        score_target_8_large > score_target_8_small
+    ), "Group matching target size 8 should score better"
+
+
+def test_large_group_formation():
+    """Test that the system can form large groups when appropriate."""
+    # Create a larger set of members that would traditionally be split into 3 groups
+    members = [
+        # Leaders
+        GroupMember(
+            id=1,
+            surname="Leader",
+            given_name="1",
+            role=MemberRole.FACILITATOR,
+            gender="M",
+            faith_status="believer",
+            education_status="undergraduate",
+            is_graduated=False,
+            is_present=True,
+            prep_attended=True,
+        ),
+        GroupMember(
+            id=2,
+            surname="Leader",
+            given_name="2",
+            role=MemberRole.COUNSELOR,
+            gender="F",
+            faith_status="seeker",
+            education_status="undergraduate",
+            is_graduated=False,
+            is_present=True,
+            prep_attended=True,
+        ),
+        GroupMember(
+            id=3,
+            surname="Leader",
+            given_name="3",
+            role=MemberRole.FACILITATOR,
+            gender="M",
+            faith_status="believer",
+            education_status="undergraduate",
+            is_graduated=False,
+            is_present=True,
+            prep_attended=True,
+        ),
+        # Regular members with mixed gender and faith status
+        *[
+            GroupMember(
+                id=i,
+                surname="Member",
+                given_name=str(i - 3),
+                role=MemberRole.REGULAR,
+                gender="M" if i % 2 == 0 else "F",
+                faith_status="believer" if i % 3 == 0 else "seeker",
+                education_status="undergraduate",
+                is_graduated=False,
+                is_present=True,
+                prep_attended=True,
+            )
+            for i in range(4, 19)  # 15 regular members
+        ],
+    ]
+
+    # Request 2 large groups instead of 3 smaller ones
+    groups = divide_into_groups(members, num_groups=2, target_size=9)
+
+    # We should get 2 groups
+    assert len(groups) == 2, "Should form exactly 2 groups when requested"
+
+    # Groups should be relatively balanced in size
+    group_sizes = [len(g.members) for g in groups]
+    assert max(group_sizes) - min(group_sizes) <= 2, "Group sizes should be balanced"
+
+    # Each group should still maintain diversity and leader requirements
+    for group in groups:
+        # Check leader presence
+        assert any(
+            m.role in (MemberRole.FACILITATOR, MemberRole.COUNSELOR)
+            for m in group.members
+        ), "Each group must have at least one leader"
+
+        # Check gender diversity
+        genders = {m.gender for m in group.members}
+        assert len(genders) > 1, "Groups should maintain gender diversity"
+
+        # Check faith status diversity
+        faith_statuses = {m.faith_status for m in group.members}
+        assert len(faith_statuses) > 1, "Groups should maintain faith status diversity"
