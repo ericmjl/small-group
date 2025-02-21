@@ -428,17 +428,30 @@ def divide_into_groups(
                     group.members.append(counselor)
                     assigned_members.add(counselor)
 
-        # Then distribute extra counselors to groups with fewest total members
+        # Then distribute extra counselors to groups with fewest counselors
         if remaining_counselors:
-            available_groups = list(range(len(groups)))
-            while remaining_counselors and extra_counselors > 0:
-                # Sort by total members
-                available_groups.sort(key=lambda i: len(groups[i].members))
-                group_idx = available_groups[0]
+            # Sort groups by counselor count
+            available_groups = sorted(
+                range(len(groups)),
+                key=lambda i: sum(
+                    1 for m in groups[i].members if m.role == MemberRole.COUNSELOR
+                ),
+            )
+
+            # Distribute remaining counselors to groups with fewest counselors
+            while remaining_counselors:
                 counselor = remaining_counselors.pop()
+                group_idx = available_groups[0]  # Take group with fewest counselors
                 groups[group_idx].members.append(counselor)
                 assigned_members.add(counselor)
-                extra_counselors -= 1
+
+                # Re-sort groups by counselor count
+                available_groups = sorted(
+                    range(len(groups)),
+                    key=lambda i: sum(
+                        1 for m in groups[i].members if m.role == MemberRole.COUNSELOR
+                    ),
+                )
 
     # Third pass: distribute any remaining facilitators
     if remaining_facilitators:
