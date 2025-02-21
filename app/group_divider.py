@@ -72,17 +72,18 @@ class Group:
         return sum(1 for m in self.members if m.prep_attended)
 
     def calculate_diversity_score(
-        self, all_groups: List["Group"] | None = None
+        self, all_groups: List["Group"] | None = None, target_size: int = 7
     ) -> float:
         """
         Calculate Shannon Diversity Index for gender, faith_status, and role combined,
         with penalties for:
-        1. Oversized groups (>8 members)
+        1. Oversized groups (>target_size+1 members)
         2. Size imbalance between groups (if all_groups is provided)
         3. Prep attendance imbalance between groups
         4. Leader density imbalance (too many leaders in one group)
 
         :param all_groups: Optional list of all groups to calculate size balance penalty
+        :param target_size: Target size for each group (default: 7)
         :return: Diversity score with penalties applied
         """
         if not self.members:
@@ -100,10 +101,10 @@ class Group:
             p = count / total
             diversity -= p * ln(p)
 
-        # Apply size penalty for groups larger than 8
-        # The penalty grows quadratically with size to strongly discourage large groups
-        if len(self.members) > 8:
-            size_penalty = ((len(self.members) - 8) ** 2) * 0.5
+        # Apply size penalty for groups larger than target_size + 1
+        # The penalty grows quadratically with size to discourage overly large groups
+        if len(self.members) > target_size + 1:
+            size_penalty = ((len(self.members) - (target_size + 1)) ** 2) * 0.5
             diversity -= size_penalty
 
         # Apply size balance penalty if all groups are provided
@@ -151,7 +152,10 @@ class Group:
 
 
 def balance_gender_in_groups(
-    groups: List[Group], max_iterations: int = 1000, temperature: float = 0.1
+    groups: List[Group],
+    max_iterations: int = 1000,
+    temperature: float = 0.1,
+    target_size: int = 7,
 ) -> List[Group]:
     """
     More efficient gender balancing algorithm that:
@@ -162,6 +166,7 @@ def balance_gender_in_groups(
     :param groups: List of groups to balance
     :param max_iterations: Maximum number of iterations
     :param temperature: Unused parameter, kept for backward compatibility
+    :param target_size: Target size for each group (default: 7)
     :return: List of balanced groups
     """
 
@@ -198,7 +203,8 @@ def balance_gender_in_groups(
     # Keep track of best solution
     best_groups = balanced_groups
     best_score = sum(
-        g.calculate_diversity_score(balanced_groups) for g in balanced_groups
+        g.calculate_diversity_score(balanced_groups, target_size=target_size)
+        for g in balanced_groups
     )
 
     # Counter for iterations without improvement
@@ -255,7 +261,10 @@ def balance_gender_in_groups(
 
                     # Calculate new score
                     new_score = sum(
-                        g.calculate_diversity_score(temp_groups) for g in temp_groups
+                        g.calculate_diversity_score(
+                            temp_groups, target_size=target_size
+                        )
+                        for g in temp_groups
                     )
 
                     # Accept if better
@@ -279,14 +288,17 @@ def balance_gender_in_groups(
 
 
 def divide_into_groups(
-    members: List[GroupMember], num_groups: int, max_iterations: int = 1000
+    members: List[GroupMember],
+    num_groups: int,
+    max_iterations: int = 1000,
+    target_size: int = 7,
 ) -> List[Group]:
     """
     Divide members into groups using a deterministic approach.
-    Target group size is 7 people.
+    Target group size is configurable via target_size parameter.
 
     Distribution sequence:
-    1. Calculate number of groups needed for target size of 7
+    1. Calculate number of groups needed for target size
     2. Distribute prep attendees first
     3. Randomly distribute leaders, ensuring each group gets one if possible
     4. Place graduates together in dedicated groups
@@ -295,15 +307,15 @@ def divide_into_groups(
     :param members: List of members to divide
     :param num_groups: Initial suggestion for number of groups (will be adjusted)
     :param max_iterations: Number of iterations for gender balancing (if > 0)
+    :param target_size: Target size for each group (default: 7)
     :return: List of groups
     """
     # Filter for present members only
     present_members = [m for m in members if m.is_present]
     total_present = len(present_members)
 
-    # Calculate number of groups needed for target size of 7
-    TARGET_SIZE = 7
-    min_groups = max(1, (total_present + TARGET_SIZE - 1) // TARGET_SIZE)
+    # Calculate number of groups needed for target size
+    min_groups = max(1, (total_present + target_size - 1) // target_size)
     max_groups = total_present // 2  # Don't allow groups smaller than 2 people
 
     # Use requested num_groups but keep it within reasonable bounds
@@ -461,7 +473,7 @@ def divide_into_groups(
     current_students = [m for m in unassigned if m.education_status != "graduated"]
 
     # Calculate how many graduate groups we need
-    grad_group_size = TARGET_SIZE  # Target same size as regular groups
+    grad_group_size = target_size  # Target same size as regular groups
     num_grad_groups = (len(graduates) + grad_group_size - 1) // grad_group_size
 
     if graduates:
@@ -522,6 +534,8 @@ def divide_into_groups(
 
     # Apply gender balancing if max_iterations > 0
     if max_iterations > 0:
-        groups = balance_gender_in_groups(groups, max_iterations)
+        groups = balance_gender_in_groups(
+            groups, max_iterations=max_iterations, target_size=target_size
+        )
 
     return groups

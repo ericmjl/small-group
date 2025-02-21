@@ -613,7 +613,11 @@ async def generate_groups(
 
                 # Stage 2: Apply gender balancing using Metropolis-Hastings
                 logger.info("Stage 2: Starting gender balancing")
-                groups = balance_gender_in_groups(initial_groups, max_iterations=10_000)
+                groups = balance_gender_in_groups(
+                    initial_groups,
+                    max_iterations=10_000,
+                    target_size=target_size,  # Pass target_size parameter
+                )
                 logger.info("Gender balancing complete")
 
     except ValueError as e:
