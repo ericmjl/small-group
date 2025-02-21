@@ -180,6 +180,10 @@ def balance_gender_in_groups(
         """Calculate how far from 0.5 the gender ratio is."""
         return abs(get_gender_ratio(group) - 0.5)
 
+    def calculate_total_imbalance(groups: List[Group]) -> float:
+        """Calculate total gender imbalance across all groups."""
+        return sum(get_group_imbalance(g) for g in groups)
+
     def find_swappable_pairs(
         g1: Group, g2: Group
     ) -> List[tuple[GroupMember, GroupMember]]:
@@ -202,10 +206,7 @@ def balance_gender_in_groups(
 
     # Keep track of best solution
     best_groups = balanced_groups
-    best_score = sum(
-        g.calculate_diversity_score(balanced_groups, target_size=target_size)
-        for g in balanced_groups
-    )
+    best_imbalance = calculate_total_imbalance(balanced_groups)
 
     # Counter for iterations without improvement
     stagnant_iterations = 0
@@ -259,22 +260,19 @@ def balance_gender_in_groups(
                     temp_groups[g1_idx] = Group(members=g1_members)
                     temp_groups[g2_idx] = Group(members=g2_members)
 
-                    # Calculate new score
-                    new_score = sum(
-                        g.calculate_diversity_score(
-                            temp_groups, target_size=target_size
-                        )
-                        for g in temp_groups
-                    )
+                    # Calculate new imbalance
+                    new_imbalance = calculate_total_imbalance(temp_groups)
 
                     # Accept if better
-                    if new_score > best_score:
-                        best_score = new_score
+                    if new_imbalance < best_imbalance:
+                        best_imbalance = new_imbalance
                         best_groups = temp_groups
                         balanced_groups = temp_groups
                         made_swap = True
                         stagnant_iterations = 0
-                        logger.debug(f"Found better solution with score {best_score}")
+                        logger.debug(
+                            f"Found better solution with imbalance {best_imbalance}"
+                        )
                         break
 
                 if made_swap:
@@ -283,7 +281,7 @@ def balance_gender_in_groups(
         if not made_swap:
             stagnant_iterations += 1
 
-    logger.info(f"Gender balancing complete. Final score: {best_score}")
+    logger.info(f"Gender balancing complete. Final imbalance: {best_imbalance}")
     return best_groups
 
 
@@ -415,19 +413,32 @@ def divide_into_groups(
             groups[group_idx].members.append(facilitator)
             assigned_members.add(facilitator)
 
-    # Second pass: try to give each group one counselor
-    groups_without_counselors = [
-        i
-        for i, g in enumerate(groups)
-        if not any(m.role == MemberRole.COUNSELOR for m in g.members)
-    ]
+    # Second pass: distribute counselors evenly
+    if remaining_counselors:
+        # Calculate target number of counselors per group
+        total_counselors = len(remaining_counselors)
+        min_counselors_per_group = total_counselors // len(groups)
+        extra_counselors = total_counselors % len(groups)
 
-    # Randomly assign one counselor to each group that needs one
-    for group_idx in groups_without_counselors:
+        # First ensure each group has the minimum number of counselors
+        for group in groups:
+            for _ in range(min_counselors_per_group):
+                if remaining_counselors:
+                    counselor = remaining_counselors.pop()
+                    group.members.append(counselor)
+                    assigned_members.add(counselor)
+
+        # Then distribute extra counselors to groups with fewest total members
         if remaining_counselors:
-            counselor = remaining_counselors.pop()
-            groups[group_idx].members.append(counselor)
-            assigned_members.add(counselor)
+            available_groups = list(range(len(groups)))
+            while remaining_counselors and extra_counselors > 0:
+                # Sort by total members
+                available_groups.sort(key=lambda i: len(groups[i].members))
+                group_idx = available_groups[0]
+                counselor = remaining_counselors.pop()
+                groups[group_idx].members.append(counselor)
+                assigned_members.add(counselor)
+                extra_counselors -= 1
 
     # Third pass: distribute any remaining facilitators
     if remaining_facilitators:
@@ -444,26 +455,6 @@ def divide_into_groups(
 
             # Re-sort available_groups by new group sizes
             available_groups.sort(key=lambda i: len(groups[i].members))
-
-    # Fourth pass: distribute any remaining counselors evenly
-    if remaining_counselors:
-        # Sort groups by number of counselors (fewest first)
-        available_groups = list(range(len(groups)))
-
-        while remaining_counselors:
-            # Sort groups by counselor count, then by total size for tiebreaking
-            available_groups.sort(
-                key=lambda i: (
-                    sum(1 for m in groups[i].members if m.role == MemberRole.COUNSELOR),
-                    len(groups[i].members),
-                )
-            )
-
-            # Add counselor to group with fewest counselors
-            group_idx = available_groups[0]
-            counselor = remaining_counselors.pop()
-            groups[group_idx].members.append(counselor)
-            assigned_members.add(counselor)
 
     # 3. Handle remaining members
     unassigned = [m for m in present_members if m not in assigned_members]
