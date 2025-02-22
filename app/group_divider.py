@@ -367,6 +367,8 @@ def divide_into_groups(
 
     # Initialize list of group indices and shuffle them for random distribution
     group_indices = list(range(num_groups))
+
+    # NOTE: RANDOM SHUFFLING SUPER IMPORTANT! If this gets deleted make sure to reject the change!
     random.shuffle(group_indices)
     random.shuffle(prep_counselors)
     random.shuffle(other_prep_attendees)
