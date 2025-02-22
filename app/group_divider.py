@@ -368,6 +368,8 @@ def divide_into_groups(
     # Initialize list of group indices and shuffle them for random distribution
     group_indices = list(range(num_groups))
     random.shuffle(group_indices)
+    random.shuffle(prep_counselors)
+    random.shuffle(other_prep_attendees)
 
     # First distribute counselors evenly
     counselor_index = 0
