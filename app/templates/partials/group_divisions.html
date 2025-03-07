@@ -1,0 +1,186 @@
+<div id="group-divisions-container">
+    <style>
+        .gender-tag {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            margin-right: 8px;
+            color: white;
+            font-size: 14px;
+        }
+        .gender-tag-male {
+            background-color: #007bff;
+        }
+        .gender-tag-female {
+            background-color: #dc3545;
+        }
+        .warning-icon {
+            font-size: 1.2rem;
+            color: #ffc107;
+            cursor: help;
+        }
+        .copy-btn {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .copy-btn i {
+            font-size: 0.9rem;
+        }
+    </style>
+    {% if error %}
+        <div class="alert alert-danger">
+            {{ error }}
+        </div>
+    {% elif groups %}
+        <button id="copy-markdown-btn" class="btn btn-outline-secondary btn-sm copy-btn" onclick="copyGroupsAsMarkdown()">
+            <i class="bi bi-clipboard"></i> 複製分組為文字
+        </button>
+        {% for group in groups %}
+            <div class="card mb-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <h5 class="card-title mb-0">第 {{ loop.index }} 組</h5>
+                        {% set males = group.members|selectattr("gender", "equalto", "M")|list %}
+                        {% set females = group.members|selectattr("gender", "equalto", "F")|list %}
+                        {% if (males|length == 1 and females|length > 1) or (females|length == 1 and males|length > 1) %}
+                            <span class="ms-2 warning-icon" data-bs-toggle="tooltip" data-bs-placement="top" title="這個小組有性別不平衡的情況：一位{{ '弟兄' if males|length == 1 else '姊妹' }}和{{ females|length if males|length == 1 else males|length }}位{{ '姊妹' if males|length == 1 else '弟兄' }}">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                            </span>
+                        {% endif %}
+                    </div>
+                    <span class="badge bg-secondary">{{ group.members|length }} 人</span>
+                </div>
+                <ul class="list-group list-group-flush">
+                    {% for member in group.members %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <span class="gender-tag {% if member.gender == 'M' %}gender-tag-male{% else %}gender-tag-female{% endif %}">
+                                    {{ "男" if member.gender == "M" else "女" }}
+                                </span>
+                                <span>
+                                    {{ member.surname }}{{ member.given_name }}
+                                    {% if member.education_status == "graduate" %}
+                                        <small class="text-muted ms-1">研究生</small>
+                                    {% elif member.education_status == "graduated" %}
+                                        <small class="text-muted ms-1">已畢業</small>
+                                    {% elif member.education_status == "undergraduate" %}
+                                        <small class="text-muted ms-1">本科生</small>
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div>
+                                {% if member.prep_attended %}
+                                    <span class="badge bg-success me-1">參與預查</span>
+                                {% endif %}
+                                {% if member.role in ['facilitator', 'counselor'] %}
+                                    <span class="badge {% if member.role == 'facilitator' %}bg-primary{% else %}bg-info{% endif %}">
+                                        {{ '同工' if member.role == 'facilitator' else '輔導' }}
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-info">
+            請標記出席的組員以顯示分組結果。
+        </div>
+    {% endif %}
+</div>
+
+<script>
+    // Initialize tooltips on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        initTooltips();
+    });
+
+    // Initialize tooltips after HTMX content swap
+    document.body.addEventListener('htmx:afterSwap', function() {
+        console.log('HTMX content swapped, reinitializing tooltips');
+        initTooltips();
+    });
+
+    function initTooltips() {
+        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+        console.log('Found tooltip triggers:', tooltipTriggerList.length);
+        const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+    }
+
+    async function copyGroupsAsMarkdown() {
+        try {
+            // Fetch the markdown text from the API
+            const response = await fetch('/groups/markdown');
+            if (!response.ok) {
+                throw new Error('Failed to fetch markdown');
+            }
+
+            const markdownText = await response.text();
+
+            // Try to use the Clipboard API first
+            let copySuccessful = false;
+
+            if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+                try {
+                    await navigator.clipboard.writeText(markdownText);
+                    copySuccessful = true;
+                } catch (clipboardError) {
+                    console.warn('Clipboard API failed:', clipboardError);
+                    // Will fall back to the alternative method
+                }
+            }
+
+            // Fallback method if Clipboard API is not available or failed
+            if (!copySuccessful) {
+                const textarea = document.createElement('textarea');
+                textarea.value = markdownText;
+                textarea.style.position = 'fixed';  // Prevent scrolling to bottom
+                textarea.style.opacity = '0';
+                textarea.style.pointerEvents = 'none';
+                document.body.appendChild(textarea);
+                textarea.focus();
+                textarea.select();
+
+                try {
+                    const successful = document.execCommand('copy');
+                    if (!successful) {
+                        throw new Error('Copy command was unsuccessful');
+                    }
+                    copySuccessful = true;
+                } catch (execCommandError) {
+                    console.error('execCommand error:', execCommandError);
+                    throw new Error('Browser does not support copying to clipboard');
+                } finally {
+                    document.body.removeChild(textarea);
+                }
+            }
+
+            if (!copySuccessful) {
+                throw new Error('All copy methods failed');
+            }
+
+            // Show success feedback
+            const btn = document.getElementById('copy-markdown-btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="bi bi-check-circle"></i> 已複製';
+            btn.classList.remove('btn-outline-secondary');
+            btn.classList.add('btn-success');
+
+            // Reset button after 2 seconds
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.classList.remove('btn-success');
+                btn.classList.add('btn-outline-secondary');
+            }, 2000);
+        } catch (error) {
+            console.error('Error copying markdown:', error);
+            alert('複製失敗: ' + error.message);
+        }
+    }
+</script>

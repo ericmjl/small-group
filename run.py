@@ -1,5 +1,29 @@
-from app import app
+"""Run the small group management application."""
+
+import argparse
+import os
+from pathlib import Path
+import uvicorn
+
+
+def main():
+    """Run the application."""
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--db-path",
+        type=Path,
+        required=False,
+        help="Path to SQLite database",
+    )
+    args = parser.parse_args()
+
+    # Set DB_PATH environment variable for the app
+    if args.db_path:
+        os.environ["DB_PATH"] = str(args.db_path.absolute())
+
+    # Run the app
+    uvicorn.run("app:app", host="0.0.0.0", port=int(os.getenv("PORT")), reload=True)
 
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=7777)
+    main()

@@ -1,9 +1,0 @@
-Flask
-pandas
-flask-sqlalchemy
-pyjanitor
-holoviews
-bokeh
-gunicorn
-python-dotenv
-psycopg2

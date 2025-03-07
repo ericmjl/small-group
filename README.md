@@ -8,7 +8,7 @@ Make sure you have the dependencies:
 - `tinydb`
 - `flask`
 
-Make sure you have a **private** GitHub repository specially designated for synchronizing your data. (Emphasis on **private**: Neither myself nor the app are responsible if your data becomes publicly available.) Follow the instructions below. 
+Make sure you have a **private** GitHub repository specially designated for synchronizing your data. (Emphasis on **private**: Neither myself nor the app are responsible if your data becomes publicly available.) Follow the instructions below.
 
     $ mkdir ~/.smallgroup
     $ cd ~/.smallgroup

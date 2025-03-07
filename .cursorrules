@@ -1,0 +1,5 @@
+Use the Python standard library as much as possible.
+
+Prefer sqlite as the database storage system + SQLAlchemy.
+
+Use FastAPI for the web server, HTMX for the frontend, and SimpleCSS for CSS.

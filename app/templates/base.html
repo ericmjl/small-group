@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小組管理系統</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.12/dist/htmx.min.js"></script>
+    <style>
+        /* Custom styles */
+        .grid-container {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr);
+            gap: 0;
+            height: calc(100vh - 140px);
+            position: relative;
+        }
+
+        .grid-container.panel-hidden {
+            grid-template-columns: 0fr minmax(0, 3fr) minmax(0, 1fr);
+        }
+
+        .column {
+            overflow-y: auto;
+            padding: 20px;
+            background-color: #fff;
+            min-width: 0;  /* Prevents content from breaking grid */
+            position: relative;
+        }
+
+        .left-panel {
+            overflow: hidden;
+            border-right: 1px solid #dee2e6;
+            position: relative;
+            z-index: 10;
+        }
+
+        .left-panel.hidden {
+            width: 0;
+            padding: 0;
+            margin: 0;
+            border-right: none;
+        }
+
+        /* Toggle Panel Button Styles */
+        .toggle-panel {
+            position: fixed;
+            width: 24px;
+            height: 24px;
+            border: 1px solid #dee2e6;
+            border-radius: 50%;
+            background: white;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            padding: 0;
+            font-size: 12px;
+            color: #666;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            top: 100px;  /* Position below header */
+        }
+
+        .toggle-panel:hover {
+            background: #f8f9fa;
+            color: #333;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+
+        /* Close button (left arrow) */
+        .toggle-panel.close-panel {
+            left: calc(25% - 12px);  /* Align with left panel edge */
+        }
+
+        /* Open button (right arrow) */
+        .toggle-panel.open-panel {
+            left: 8px;  /* Small offset from left edge */
+        }
+
+        .panel-hidden .toggle-panel.close-panel {
+            display: none;
+        }
+
+        .panel-hidden .toggle-panel.open-panel {
+            display: flex;
+        }
+
+        .toggle-panel.close-panel {
+            display: flex;
+        }
+
+        .toggle-panel.open-panel {
+            display: none;
+        }
+
+        .attendance-toggle {
+            cursor: pointer;
+        }
+
+        .present {
+            background-color: #198754;
+            color: white;
+        }
+
+        /* Ensure forms look consistent */
+        .form-label {
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control, .form-select {
+            margin-bottom: 1rem;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .grid-container {
+                display: block;
+                height: auto;
+            }
+
+            .column {
+                min-height: 400px;
+                margin-bottom: 20px;
+            }
+
+            .left-panel.hidden {
+                display: none;
+            }
+
+            .toggle-panel {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <header class="bg-dark text-white py-3 mb-3">
+        <div class="container-fluid">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h3 mb-0">小組管理系統</h1>
+                <nav>
+                    <a href="/" class="btn btn-outline-light me-2">活躍組員</a>
+                    <a href="/inactive" class="btn btn-outline-light">非活躍組員</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="container-fluid">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="bg-dark text-white text-center py-3 mt-3">
+        <p class="mb-0">使用 FastAPI、HTMX 和 Bootstrap 開發</p>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function togglePanel() {
+            const leftPanel = document.querySelector('.left-panel');
+            const gridContainer = document.querySelector('.grid-container');
+            if (leftPanel && gridContainer) {
+                leftPanel.classList.toggle('hidden');
+                gridContainer.classList.toggle('panel-hidden');
+            }
+        }
+    </script>
+</body>
+</html>
