@@ -75,6 +75,15 @@ instance/
 
 # Scrapy stuff:
 .scrapy
+local_settings.py
+db.sqlite3
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
 
 # Sphinx documentation
 docs/_build/
