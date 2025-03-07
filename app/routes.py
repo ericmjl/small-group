@@ -6,6 +6,7 @@ from pypinyin import lazy_pinyin, Style
 from sqlalchemy import or_
 from loguru import logger
 import json
+from fastapi.responses import PlainTextResponse
 
 from . import app, templates
 from .database import get_db
@@ -17,6 +18,9 @@ from app.group_divider import (
     balance_gender_in_groups,
 )
 from app.models import Member as DBMember
+
+# Global variable to store the current groups
+current_groups = None
 
 
 def get_pinyin(text: str) -> str:
@@ -31,6 +35,7 @@ def get_pinyin(text: str) -> str:
 @app.get("/")
 async def home(request: Request, db: Session = Depends(get_db)):
     """Home page showing all members and attendance."""
+    global current_groups
     members = db.query(Member).filter(Member.active == True).all()
     today = date.today()
 
@@ -92,6 +97,9 @@ async def home(request: Request, db: Session = Depends(get_db)):
                     groups = divide_into_groups(
                         group_members, num_groups, max_iterations=0
                     )
+
+                    # Store the current groups globally
+                    current_groups = groups
 
     except ValueError as e:
         logger.warning(f"Could not create initial groups: {e}")
@@ -323,6 +331,7 @@ async def delete_member(
 @app.post("/divide-groups")
 async def divide_groups(request: Request):
     """Handle group division request."""
+    global current_groups
     try:
         db = next(get_db())
         members = db.query(DBMember).all()
@@ -387,6 +396,9 @@ async def divide_groups(request: Request):
 
         # Divide into groups
         groups = divide_into_groups(group_members, num_groups)
+
+        # Store the current groups globally
+        current_groups = groups
 
         return request.app.state.templates.TemplateResponse(
             "partials/group_divisions.html", {"request": request, "groups": groups}
@@ -563,6 +575,7 @@ async def generate_groups(
     db: Session = Depends(get_db),
 ):
     """Generate groups based on current attendance and target size, with gender balancing."""
+    global current_groups
     today = date.today()
     members = db.query(Member).filter_by(active=True).all()
     attendance_records = db.query(Attendance).filter_by(date=today).all()
@@ -619,6 +632,9 @@ async def generate_groups(
                     target_size=target_size,  # Pass target_size parameter
                 )
                 logger.info("Gender balancing complete")
+
+                # Store the current groups globally
+                current_groups = groups
 
     except ValueError as e:
         logger.warning(f"Could not create groups: {e}")
@@ -707,3 +723,72 @@ async def unselect_all_prep(
             "attendance": attendance,
         },
     )
+
+
+@app.get("/groups/markdown", response_class=PlainTextResponse)
+async def get_groups_markdown(request: Request, db: Session = Depends(get_db)):
+    """Generate markdown text for the current group divisions."""
+    global current_groups
+    today = date.today()
+
+    markdown_text = f"# 小組分組 {today.strftime('%Y-%m-%d')}\n\n"
+
+    try:
+        # Use the globally stored groups instead of regenerating them
+        if current_groups:
+            # Generate markdown text from the current groups
+            for i, group in enumerate(current_groups, 1):
+                markdown_text += f"## 第 {i} 組 ({len(group.members)} 人)\n\n"
+
+                # Count gender distribution
+                males = sum(1 for m in group.members if m.gender == "M")
+                females = sum(1 for m in group.members if m.gender == "F")
+                markdown_text += f"男: {males}, 女: {females}\n\n"
+
+                # List members
+                for member in group.members:
+                    # Use the same emoji as in the screenshot
+                    emoji_map = {"M": "👨", "F": "👩"}
+                    gender_symbol = emoji_map.get(member.gender, "")
+                    name = f"{member.surname}{member.given_name}"
+
+                    # Add role and education status
+                    role_text = ""
+                    if member.role == MemberRole.FACILITATOR:
+                        role_text = "同工"
+                    elif member.role == MemberRole.COUNSELOR:
+                        role_text = "輔導"
+
+                    edu_text = ""
+                    if member.education_status == "graduate":
+                        edu_text = "研究生"
+                    elif member.education_status == "graduated":
+                        edu_text = "已畢業"
+                    elif member.education_status == "undergraduate":
+                        edu_text = "本科生"
+
+                    # Format the status text to match the UI
+                    status_parts = []
+                    if role_text:
+                        status_parts.append(role_text)
+                    if edu_text:
+                        status_parts.append(edu_text)
+
+                    status = f" ({', '.join(status_parts)})" if status_parts else ""
+
+                    # Add prep attendance marker
+                    prep = " ✓預查" if member.prep_attended else ""
+
+                    markdown_text += f"- {gender_symbol} {name}{status}{prep}\n"
+
+                markdown_text += "\n"
+        else:
+            # If no groups are stored, inform the user
+            markdown_text += (
+                "No groups have been generated yet. Please generate groups first."
+            )
+    except Exception as e:
+        logger.exception("Error generating markdown")
+        markdown_text += f"Error generating group divisions: {str(e)}"
+
+    return markdown_text

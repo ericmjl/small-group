@@ -22,12 +22,24 @@
             color: #ffc107;
             cursor: help;
         }
+        .copy-btn {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .copy-btn i {
+            font-size: 0.9rem;
+        }
     </style>
     {% if error %}
         <div class="alert alert-danger">
             {{ error }}
         </div>
     {% elif groups %}
+        <button id="copy-markdown-btn" class="btn btn-outline-secondary btn-sm copy-btn" onclick="copyGroupsAsMarkdown()">
+            <i class="bi bi-clipboard"></i> 複製分組為文字
+        </button>
         {% for group in groups %}
             <div class="card mb-3">
                 <div class="card-header d-flex justify-content-between align-items-center">
@@ -99,5 +111,76 @@
         const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
         console.log('Found tooltip triggers:', tooltipTriggerList.length);
         const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+    }
+
+    async function copyGroupsAsMarkdown() {
+        try {
+            // Fetch the markdown text from the API
+            const response = await fetch('/groups/markdown');
+            if (!response.ok) {
+                throw new Error('Failed to fetch markdown');
+            }
+
+            const markdownText = await response.text();
+
+            // Try to use the Clipboard API first
+            let copySuccessful = false;
+
+            if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+                try {
+                    await navigator.clipboard.writeText(markdownText);
+                    copySuccessful = true;
+                } catch (clipboardError) {
+                    console.warn('Clipboard API failed:', clipboardError);
+                    // Will fall back to the alternative method
+                }
+            }
+
+            // Fallback method if Clipboard API is not available or failed
+            if (!copySuccessful) {
+                const textarea = document.createElement('textarea');
+                textarea.value = markdownText;
+                textarea.style.position = 'fixed';  // Prevent scrolling to bottom
+                textarea.style.opacity = '0';
+                textarea.style.pointerEvents = 'none';
+                document.body.appendChild(textarea);
+                textarea.focus();
+                textarea.select();
+
+                try {
+                    const successful = document.execCommand('copy');
+                    if (!successful) {
+                        throw new Error('Copy command was unsuccessful');
+                    }
+                    copySuccessful = true;
+                } catch (execCommandError) {
+                    console.error('execCommand error:', execCommandError);
+                    throw new Error('Browser does not support copying to clipboard');
+                } finally {
+                    document.body.removeChild(textarea);
+                }
+            }
+
+            if (!copySuccessful) {
+                throw new Error('All copy methods failed');
+            }
+
+            // Show success feedback
+            const btn = document.getElementById('copy-markdown-btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="bi bi-check-circle"></i> 已複製';
+            btn.classList.remove('btn-outline-secondary');
+            btn.classList.add('btn-success');
+
+            // Reset button after 2 seconds
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.classList.remove('btn-success');
+                btn.classList.add('btn-outline-secondary');
+            }, 2000);
+        } catch (error) {
+            console.error('Error copying markdown:', error);
+            alert('複製失敗: ' + error.message);
+        }
     }
 </script>
