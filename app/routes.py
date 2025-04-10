@@ -738,12 +738,7 @@ async def get_groups_markdown(request: Request, db: Session = Depends(get_db)):
         if current_groups:
             # Generate markdown text from the current groups
             for i, group in enumerate(current_groups, 1):
-                markdown_text += f"## 第 {i} 組 ({len(group.members)} 人)\n\n"
-
-                # Count gender distribution
-                males = sum(1 for m in group.members if m.gender == "M")
-                females = sum(1 for m in group.members if m.gender == "F")
-                markdown_text += f"男: {males}, 女: {females}\n\n"
+                markdown_text += f"## 第 {i} 組\n\n"
 
                 # List members
                 for member in group.members:
